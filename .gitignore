@@ -1,0 +1,11 @@
+# 本机档案与临时产物（不上传）
+.v2p/
+.v2ptest/
+.qgtest/
+v2p_local/
+*.tmp
+__pycache__/
+*.pyc
+dist/
+.DS_Store
+Thumbs.db
