@@ -266,3 +266,12 @@ New-Item -ItemType Junction `
 - 口味档案存在本机 `~/.workbuddy/v2p/`，不上传。
 
 MIT © 2026 张勇鑫 (Zhang Yongxin)
+
+## 许可证 | License
+
+本项目以 [MIT License](LICENSE) 开源。
+
+> Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
+>
+> 任何人可免费使用、修改、再分发（含商用），唯须保留上述版权与许可声明。
+> 作者姓名「张勇鑫 (Zhang Yongxin)」为唯一署名，转载请勿删改。
