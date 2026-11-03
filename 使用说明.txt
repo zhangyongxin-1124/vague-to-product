@@ -1,0 +1,169 @@
+================================================================================
+vague-to-product（模糊需求挖掘与产出生成器） 使用说明
+版本：v2.3.0    对应 fuzzy-reverse-flow v1.3.0
+许可证：MIT License    Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
+本文件与 README.md 同为发版必检文档，内容必须与代码完全一致。
+================================================================================
+
+【0. 使用前必读：三档能力边界】
+本项目是「本地文件 + Python CLI + 落盘知识库」，仓库内没有任何 HTTP 服务、
+MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的是「能不能拿去用」，
+不解决「别人怎么连上」。能否调用、能调用到什么程度，取决于宿主能力，分三档：
+
+  能力档 A（完整）  条件：宿主支持「读文件 + 执行命令」（tool use）
+      典型：WorkBuddy、Codex CLI、Cursor / Cline / Windsurf / Trae、Claude Code
+      能做：全套 CLI —— plan / settle / change / bundle / gate / use / viz /
+            spec / profile / route / depth / ask；可读取 fuzzy-reverse-flow 的
+            103 条种子规则与 19 条冷启动坑卡，输出带真实红线的联合报告。
+      不能：无（这是唯一能拿到完整能力的档位）
+
+  能力档 B（注入）  条件：模型本身不能执行本地命令，但可在本地先召回规则，
+                    再把规则原文注入模型 API（DeepSeek API 等 OpenAI 兼容端点）
+      能做：拿到召回的规则原文，让模型把硬结论写成人话稿
+      不能：模型不跑 CLI、不写知识库、不产生待审区记录、不执行迁移
+
+  能力档 C（降级）  条件：网页聊天、手机 App、纯提示词输入框
+      能做：只拿到方法论提示词（八类形态判定、五信号深度、六道闸门、反模式）
+      不能：拿不到规则库、不能引用具体红线或法条、不能沉淀、不能迁移；
+            合规结论只能写成「请人工向官方核实」，不得伪装成确定结论
+
+  ★ 网页聊天与手机只能降级到 C 档。这不是模型智力问题，是宿主没有
+    「读文件 + 执行命令」能力。把开源可获取误当成服务可调用，是最常见的坑。
+  ★ 本文件「能力档 A/B/C」与 rfe README「快速开始方式 A/B」含义不同，
+    后者指安装方式，不要混淆。
+
+【1. 12 项调用前自检清单（逐项打勾，缺一不建议开始）】
+  1. □ 已取得技能文件副本（git clone 或 GitHub Release ZIP），并校验 SHA256
+  2. □ 已安装 Python 3.8+，命令行 python -V 可执行（零第三方依赖）
+  3. □ 用户目录可写（~/.workbuddy/ 或 RFE_KB 指向的目录可创建文件）
+  4. □ 调用宿主支持「读文件 + 执行命令」；纯网页 / 手机 App 不满足（决定性）
+  5. □ 已初始化知识库：rfe init，且 rfe stats 显示规则总数大于 0
+  6. □ 已完成结构迁移：rfe migrate --check 显示 v2，必要时执行 rfe migrate
+  7. □ 模型上下文窗口 ≥ 8K（注入规则后实测约 7418 字）
+  8. □ 知识库复核时间戳在 90 天内（rfe meta / rfe doctor 查看）
+  9. □ 已确认本次属于 A / B / C 哪一档，并接受该档能力上限
+ 10. □ 已阅读并接受第 6 节完整免责声明 7 条（报告尾部强制附带）
+ 11. □ 用途为自用或内网团队复用，不是公开 SaaS / 对外经营性 API
+ 12. □ 多宿主并行时，新沉淀走 v2p settle → 待审区 → rfe pitfall approve/reject，
+        不直接写正式库
+
+【2. 环境变量与路径（写代码 / 改配置时以此为准）】
+  V2P_HOME      口味档案与 plans/ 报告根目录，默认 ~/.workbuddy/v2p
+  V2P_PROJECT   多项目口味隔离：临时覆盖当前项目名（对应 v2p use）
+  RFE_KB        rfe 可写本地知识库目录，默认 ~/.workbuddy/reverse-engine
+  RFE_SCRIPT    显式指定 rfe.py 路径（bridge 找不到同级 rfe 时使用）
+  只读种子库    <技能目录>/kb_seed/*.json —— 随仓库分发，任何命令都不写入
+  可写本地库    RFE_KB —— rules.jsonl / pitfalls.jsonl / pending.jsonl / kb_meta.json
+  安装位置      WorkBuddy: ~/.workbuddy/skills/<技能名>/
+                Codex CLI: ~/.codex/skills/<技能名>/
+
+【3. 命令清单（v2.3.0，全部零依赖纯标准库）】
+  统一入口（编排层，单向调用 rfe，用户无需感知）
+    v2p plan -t "你的想法"              一份报告 = 需求挖掘 + 合规红线 +
+                                        资源底线 + 倒排里程碑 + 完整免责
+    v2p plan -t "..." --bundle app,doc,sheet   多产物复合交付，深度取 max+1
+  挖掘与规格
+    v2p route / depth / ask / forms     形态判定、深度打分、按轮次取题
+    v2p spec new / spec check           规格骨架生成与交付验收
+    v2p profile show|set|veto|habit|cat|shape|depth   口味档案
+    v2p use [项目名]                    多项目口味隔离（写 profiles/<项目>.json）
+  交付质量与合规
+    v2p gate list|card|manual|redteam|scan|stats   六道闸门 65 项 + 合规闸门
+    v2p gate manual --verify            手测清单勾选与截图留痕校验
+  收尾与变更
+    v2p settle rule|pitfall|status|done  强制沉淀（先入待审区）
+    v2p settle done --skip <理由>       确无可沉淀时的显式豁免
+    v2p change -t "改了什么"            需求变更自动重跑合规与工期推演
+    v2p bundle --items app,doc,sheet    五类一致性对账清单
+  可视化
+    v2p viz depth                       五信号雷达 SVG
+    v2p viz gates -f app                闸门分布条形 SVG
+    v2p viz heatmap -t "原话"           五信号 × D0-D4 关注热力图 SVG（v2.3.0 新增）
+  自测与打包
+    python scripts/selftest.py          端到端自测（v2.3.0：118 项）
+    python scripts/package.py           可复现打包到 dist/（固定时间戳）
+    python scripts/provenance_check.py  原创性溯源扫描
+
+  rfe 侧（fuzzy-reverse-flow v1.3.0）
+    rfe init / recall / infer / add / pitfall / meta / audit / stats /
+    export / verify / doctor / migrate
+    rfe migrate --check                只报告不写入
+    rfe migrate                        迁移到 schema_version=2（自动备份）
+
+【4. 知识库分层、待审区与版本迁移】
+  4.1 只读种子库 kb_seed/ 随仓库分发，永不写入；可写本地库只认 RFE_KB。
+  4.2 WorkBuddy 与 Codex 等多个宿主共用同一份可写本地库，故新沉淀一律先进
+      pending.jsonl 待审区，人工 rfe pitfall approve/reject 后才转正，
+      防止多宿主并行写入污染知识库。
+  4.3 结构版本：kb_meta.json 的 schema_version，当前目标 v2。
+      rfe migrate 只改结构不改语义：补字段、规范化 ID、重算 fingerprint、
+      按 fingerprint 去重，并把旧库备份为 *.backup-v<旧版本>-<日期>.jsonl。
+  4.4 迁移顺序：rfe init → rfe migrate --check → rfe migrate → rfe doctor → rfe stats。
+
+【5. 统一问题编码（消除两套工具告警重复）】
+  V2P-QG-*   交付质量闸门检查项（原短码 QG-xxx，等价全称 V2P-QG-xxx）
+  V2P-OR-*   编排层冲突 / 状态告警
+  RFE-RL-*   规则库红线与阻断规则
+  RFE-PT-*   踩坑记忆（坑卡）
+  RFE-DR-*   知识库自检诊断（001 重复 ID / 002 缺 rule / 003 缺 fingerprint /
+              101 季度复核到期 91-180 天 / 102 过期规则 >180 天）
+  规则：前缀全局唯一；编码幂等（已带前缀不再叠加）；同一编码可跨节引用但
+  按「问题编码索引（去重）」计数；红线节与资源底线节按编码集合去重过滤。
+  完整规范见 references/issue-codes.md。
+
+【6. 完整免责声明（7 条，每份 plan 报告尾部强制附带）】
+  1. 内容性质：全部规则、红线、坑卡与检查项为作者及贡献者的经验性总结，
+     非法律意见、非监管口径、非投资建议。
+  2. 时效风险：法律法规、平台审核规则、资质要求会变动；报告所附
+     「知识库复核时间戳」只表示上次人工复核日期，不保证当下仍有效。
+  3. 强制人工核验：任何「通过 / 阻断」结论都是自动化的必要条件判断，
+     上线、签约、投放、发布前必须由具备资质的人员向官方渠道逐条核实。
+  4. 不替代测试：静态扫描与手测清单不能替代真实环境测试、灰度验证与人工验收；
+     交付必须保留人工核验环节。
+  5. 责任边界：使用者对基于本报告作出的决策独立承担责任；
+     作者不对任何直接或间接损失负责。
+  6. 使用边界：本项目仅授权自用与内网团队复用；禁止封装为公开 SaaS、
+     对外经营性 API 或任何面向不特定公众的付费服务。
+  7. 署名保留：依据 MIT License，转载、修改与再分发必须保留
+     「Copyright (c) 2026 张勇鑫 (Zhang Yongxin)」及许可声明。
+
+【7. 边界与禁止条款（硬约束）】
+  允许：个人自用；内网团队多个 Agent 复用（如需服务化，仅允许绑定
+        127.0.0.1 环回地址，不得对外暴露）；GitHub 开源与 Release 分发。
+  禁止：公开 SaaS 产品化；对外经营性 API；面向不特定公众的付费服务；
+        把规则库当作商业合规数据服务售卖；删除或改写 MIT 署名。
+  理由：规则是经验总结而非合规意见，公开对外提供会构成事实上的
+        「合规意见服务」，带来法律风险。本项目不做、不建议、不授权。
+  P2-3「简易 MCP Server」本期不实施（属择机迭代）：如未来实施，
+  仅限内网环回复用，仍禁止任何公网暴露与公开 SaaS 形态。
+
+【8. 长期维护：季度复核机制】
+  8.1 每季度人工核对官方入口后执行 rfe meta --set-review 记录复核日期。
+  8.2 rfe doctor 分级标记：91-180 天未核实 → RFE-DR-101；
+      超过 180 天或无核实日期 → RFE-DR-102。
+  8.3 逐条核实后执行 rfe verify --id <ID> --confidence high。
+  8.4 每份 v2p plan 报告强制附带知识库复核时间戳与第 6 节完整免责声明。
+
+【9. 安装与 Release 部署（降低部署成本）】
+  9.1 从 GitHub Release 下载 vague-to-product-v2.3.0.zip，核对页面 SHA256。
+  9.2 解压到 ~/.workbuddy/skills/vague-to-product/（WorkBuddy）
+      或 ~/.codex/skills/vague-to-product/（Codex CLI）。
+  9.3 同级放置 fuzzy-reverse-flow/（v2p plan 需要它做合规排雷；
+      也可用 RFE_SCRIPT 指定路径）。
+  9.4 执行 python scripts/selftest.py，应输出「全部通过」。
+  9.5 执行 rfe init → rfe migrate --check → 完成第 1 节 12 项自检。
+  9.6 推广路径：自用提效 → GitHub 开源 Release；拦截公开 SaaS，明确禁止
+      公开 SaaS 产品化。
+
+【10. 发版校验（维护者）】
+  python _check_docs.py                      校验源码与 README / 使用说明.txt 一致
+  python _check_docs.py --zip dist/<包名>.zip  连发布包内文档一起比对
+  全部 PASS 才允许发版。发版固定顺序：
+  改代码 → 更新 README.md 与使用说明.txt → 跑校验 → 组装发布包 →
+  再跑带 --zip 的校验 → 提交推送 → 上传 / 替换 Release 附件。
+
+================================================================================
+仓库：https://github.com/zhangyongxin-1124/vague-to-product
+配套：https://github.com/zhangyongxin-1124/fuzzy-reverse-flow
+MIT License ｜ Copyright (c) 2026 张勇鑫 (Zhang Yongxin) ｜ 转载请保留署名
+================================================================================

@@ -2,6 +2,28 @@
 
 本项目遵循语义化版本。
 
+## [2.3.0] - 2026-11-03
+
+> 主题：**文档边界清晰化 + 知识库迁移 + 热力图 + 统一问题编码 + 完整免责 + GitHub Release。**
+
+### Added（P0-3 / P1-3 / P2-1 / 长期维护）
+- **三档能力边界 A/B/C 与 12 项调用前自检清单**：写入 README「零、使用前提与能力边界（必读）」显著位置及新增 `使用说明.txt`；明确网页聊天、手机 App 只能降级到 C 档，MIT 授权≠可远程调用。
+- **完整免责声明 7 条**：`bridge.py::DISCLAIMER_SECTIONS`，每份 `v2p plan` 报告尾部强制附带，并强制带知识库复核时间戳；简版免责不再单独使用。
+- **`v2p viz heatmap`**：五信号 × D0–D4 关注热力图 SVG（原有 `depth` 雷达图、`gates` 条形图保留）。
+- **统一问题编码**：`bridge.py::ISSUE_PREFIX`（V2P-QG / V2P-OR / RFE-RL / RFE-PT / RFE-DR）+ `orchestrate.py::issue_code()`；报告头部声明编码规范、尾部输出「问题编码索引（去重）」，红线节与资源底线节按编码集合去重，消除两套工具告警重复。规范见 `references/issue-codes.md`。
+- **禁止公开 SaaS 条款**：README / 使用说明.txt / SKILL.md 三处明确「允许自用与内网环回复用，禁止公开 SaaS 产品化、对外经营性 API、面向不特定公众的付费服务」；P2-3 简易 MCP Server 本期不实施（择机，且仅限内网环回）。
+- **GitHub Release ZIP**：`vague-to-product-v2.3.0.zip` 与配套 `fuzzy-reverse-flow-v1.3.0.zip`，带 SHA256，降低部署成本。
+- **`_check_docs.py` 发版校验**：比对源码版本号、命令清单、环境变量、路径、免责 7 条、编码前缀、章节编号与交叉引用；`--zip` 连发布包内 README.md / 使用说明.txt 一起比对，全部 PASS 才允许发版。
+
+### Changed
+- README 新增「零、」必读章节与附录 A–D（知识库分层与迁移 / 统一问题编码 / 季度复核 / Release 与发版校验）；修正历史版本标题与 viz 命令清单。
+- `使用说明.txt` 新建，与 README 同为发版必检文档。
+- 报告中的规则 / 坑卡 ID 统一带前缀（如 `RFE-RL-RULE-ECOM-0001`），`QG-xxx` 短码保持向后兼容。
+- 自测 114 → 118 项（新增完整免责、编码索引、禁止 SaaS、heatmap 四项断言）。
+
+### 配套 rfe v1.3.0
+`rfe migrate` 结构版本迁移（schema_version=2）、只读种子库 / 可写本地库显式分层、`rfe doctor` 季度 91–180 天与过期 >180 天分级 + `RFE-DR-*` 编码、季度复核机制。
+
 ## [2.2.0] - 2026-11-03
 
 > 主题：**打通两套技能做编排，堵住「质量满分但合规翻车」的漏洞。**

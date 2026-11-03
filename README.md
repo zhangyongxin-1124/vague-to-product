@@ -5,6 +5,61 @@
 
 很多人不是没想法，是想法没成形。这个工具不问你"要什么功能"，而是**给你选项让你判断**，然后**按需求的真实分量决定挖多深**，最后直接产出成品。
 
+## 零、使用前提与能力边界（必读）
+
+> 本项目是「本地文件 + Python CLI + 落盘知识库」，仓库内**没有任何 HTTP 服务、MCP Server 或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.3.0**，配套 fuzzy-reverse-flow **v1.3.0**。
+
+### 0.1 三档能力边界（A / B / C）
+
+| 档位 | 条件 | 能做 | 不能做 |
+|---|---|---|---|
+| **能力档 A（完整）** | 宿主支持「读文件 + 执行命令」（tool use）：WorkBuddy、Codex CLI、Cursor / Cline / Windsurf / Trae、Claude Code | 全套 CLI（`plan` / `settle` / `change` / `bundle` / `gate` / `use` / `viz` / `spec` / `profile`）；读取 103 条种子规则与 19 条冷启动坑卡，输出带真实红线的联合报告 | — |
+| **能力档 B（注入）** | 模型本身不能执行本地命令，但可在本地召回规则后把规则原文注入 API（DeepSeek API 等 OpenAI 兼容端点） | 拿到召回的规则原文，让模型把硬结论写成人话稿 | 模型不跑 CLI、不写知识库、不产生待审区记录、不执行迁移 |
+| **能力档 C（降级）** | **网页聊天、手机 App**、纯提示词输入框 | 只拿到方法论提示词（形态判定、五信号深度、六道闸门 / 四步闭环、反模式） | 拿不到规则库、不能引用具体红线或法条、不能沉淀、不能迁移；合规结论只能写成「请人工向官方核实」 |
+
+**网页聊天与手机只能降级到 C 档。** 这不是模型智力问题，是宿主没有「读文件 + 执行命令」能力；把开源可获取误当成服务可调用，是最常见的坑。（本文件「能力档 A/B/C」与 rfe README「快速开始方式 A/B」含义不同，后者指安装方式。）
+
+### 0.2 12 项调用前自检清单（逐项打勾，缺一不建议开始）
+
+1. □ 已取得技能文件副本（git clone 或 GitHub Release ZIP），并校验 **SHA256** 与发布页一致
+2. □ 已安装 **Python 3.8+**，`python -V` 可执行（零第三方依赖）
+3. □ 用户目录可写（`~/.workbuddy/` 或 `RFE_KB` 指向的目录可创建文件）
+4. □ 调用宿主支持「读文件 + 执行命令」；纯网页 / 手机 App 不满足（**决定性**）
+5. □ 已初始化知识库：`rfe init`，且 `rfe stats` 显示规则总数大于 0
+6. □ 已完成结构迁移：`rfe migrate --check` 显示 v2，必要时执行 `rfe migrate`
+7. □ 模型上下文窗口 ≥ 8K（注入规则后实测约 7418 字）
+8. □ 知识库复核时间戳在 90 天内（`rfe meta` / `rfe doctor` 查看）
+9. □ 已确认本次属于 A / B / C 哪一档，并接受该档能力上限
+10. □ 已阅读并接受 0.3 节完整免责声明 7 条（报告尾部强制附带）
+11. □ 用途为自用或内网团队复用，**不是**公开 SaaS / 对外经营性 API
+12. □ 多宿主并行时，新沉淀走 `v2p settle` → 待审区 → `rfe pitfall approve/reject`，不直接写正式库
+
+> 完整逐条版见同目录 [`使用说明.txt`](使用说明.txt)（与 README 同为发版必检文档，由 `_check_docs.py` 强制比对一致性）。
+
+### 0.3 使用前提与完整免责声明（7 条，报告尾部强制附带）
+
+1. **内容性质**：全部规则、红线、坑卡与检查项为作者及贡献者的经验性总结，非法律意见、非监管口径、非投资建议。
+2. **时效风险**：法律法规、平台审核规则、资质要求会变动；报告所附「知识库复核时间戳」只表示上次人工复核日期，不保证当下仍有效。
+3. **强制人工核验**：任何「通过 / 阻断」结论都是自动化的必要条件判断，上线、签约、投放、发布前必须由具备资质的人员向官方渠道逐条核实。
+4. **不替代测试**：静态扫描与手测清单不能替代真实环境测试、灰度验证与人工验收；交付必须保留人工核验环节。
+5. **责任边界**：使用者对基于本报告作出的决策独立承担责任；作者不对任何直接或间接损失负责。
+6. **使用边界**：本项目仅授权自用与内网团队复用；禁止封装为公开 SaaS、对外经营性 API 或任何面向不特定公众的付费服务。
+7. **署名保留**：依据 MIT License，转载、修改与再分发必须保留「Copyright (c) 2026 张勇鑫 (Zhang Yongxin)」及许可声明。
+
+> 每份 `v2p plan` 输出报告强制附带本节 7 条免责声明与**知识库复核时间戳**；只写一行简版免责视为不合格。
+
+### 0.4 边界与禁止条款（硬约束）
+
+- **允许**：个人自用；内网团队多个 Agent 复用（如需服务化，仅允许绑定 `127.0.0.1` 环回地址，不得对外暴露）；GitHub 开源与 Release 分发。
+- **禁止**：公开 SaaS 产品化；对外经营性 API；面向不特定公众的付费服务；把规则库当作商业合规数据服务售卖；删除或改写 MIT 署名。
+- **理由**：规则是经验总结而非合规意见，公开对外提供会构成事实上的「合规意见服务」，带来法律风险。本项目不做、不建议、不授权。
+- **P2-3「简易 MCP Server」本期不实施**（属择机迭代）：如未来实施，仅限内网环回复用，仍禁止任何公网暴露与公开 SaaS 形态。
+
+### 0.5 章节指引
+
+- 知识库分层与版本迁移 → 附录 A；统一问题编码 → 附录 B；季度复核 → 附录 C；Release 部署与发版校验 → 附录 D。
+- 环境变量与路径、完整命令清单 → [`使用说明.txt`](使用说明.txt) 第 2、3 节。
+
 ---
 
 ## 它解决什么
@@ -63,7 +118,7 @@
 
 ---
 
-## 一条命令联合推演（v2.2.0 编排层）
+## 一条命令联合推演（v2.2.0 起，v2.3.0 增强）
 
 ```bash
 v2p plan -t "我要做一个招聘小程序"
@@ -73,9 +128,9 @@ v2p plan -t "我要做一个招聘小程序"
 
 交付收尾是强制的：`v2p settle pitfall/rule`（先入待审区，`rfe pitfall approve` 转正）→ `v2p settle done`。没沉淀过任何经验就标记交付，`v2p spec check` 会拦下你。需求变了：`v2p change -t "改了什么"`，自动重跑红线 diff 与工期推演。
 
-其他：`v2p use 项目名`（口味档案按项目隔离）、`v2p gate manual`（手测清单+截图留痕校验）、`v2p bundle --items app,doc,sheet`（多产物一致性对账）、`v2p viz depth/-gates`（SVG 可视化）。
+其他：`v2p use 项目名`（口味档案按项目隔离）、`v2p gate manual`（手测清单+截图留痕校验）、`v2p bundle --items app,doc,sheet`（多产物一致性对账）、`v2p viz depth / gates / heatmap`（雷达图 / 闸门分布 / 五信号热力图，v2.3.0 新增 heatmap）。
 
-> 免责：规则与检查项为经验总结，不构成法律意见；自动化检查不能替代人工测试。
+> 完整免责声明见 0.3 节 7 条（报告尾部强制附带）；此处不再使用简版免责。
 
 ## 用起来
 
@@ -266,6 +321,58 @@ New-Item -ItemType Junction `
 - 口味档案存在本机 `~/.workbuddy/v2p/`，不上传。
 
 MIT © 2026 张勇鑫 (Zhang Yongxin)
+
+---
+
+## 附录 A · 知识库分层、待审区与版本迁移（v1.3.0 机制）
+
+| 层 | 路径 | 权限 |
+|---|---|---|
+| **只读种子库** | `<技能目录>/kb_seed/*.json`（103 条规则 / 13 领域） | 随仓库分发，**任何命令都不写入** |
+| **可写本地库** | `RFE_KB`，默认 `~/.workbuddy/reverse-engine` | `rules.jsonl` / `pitfalls.jsonl` / `pending.jsonl` / `rejected.jsonl` / `kb_meta.json` |
+
+- WorkBuddy 与 Codex 等**多宿主共用同一份可写本地库**，故新沉淀一律先进 `pending.jsonl` 待审区，人工 `rfe pitfall approve --id` / `reject --id` 后才转正，防止多宿主并行写入污染知识库。
+- 结构版本写入 `kb_meta.json` 的 `schema_version=2`（当前目标 **v2**）：v0 = v1.1.x 及更早（无元数据）；v1 = v1.2.0（三件套 + 复核时间戳）；v2 = v1.3.0（字段规范化、fingerprint 去重、季度复核分级、只读/可写库显式分层）。
+- `rfe migrate --check` 只报告不写入；`rfe migrate` 执行迁移并自动备份为 `*.backup-v<旧版本>-<日期>.jsonl`，**只改结构不改语义**（补 `created_at` / `source` / `status` / `review` / `schema` / `severity` / `type` / `hit_count` / `verified_at`、规范化 ID、重算 fingerprint、按 fingerprint 去重）。
+- 标准顺序：`rfe init` → `rfe migrate --check` → `rfe migrate` → `rfe doctor` → `rfe stats`。
+- **环境变量与默认参数**（写代码 / 改配置以此为准）：`RFE_KB`（可写本地库，默认 `~/.workbuddy/reverse-engine`）、`RFE_SCRIPT`（v2p bridge 显式指定 rfe.py）、`V2P_HOME`（口味档案与 plans/ 报告，默认 `~/.workbuddy/v2p`）、`V2P_PROJECT`（多项目口味隔离）。完整清单见 `使用说明.txt` 第 2 节。
+
+---
+
+## 附录 B · 统一问题编码（消除两套工具告警重复）
+
+| 前缀 | 所属 | 含义 | 全局编码示例 |
+|---|---|---|---|
+| `V2P-QG-*` | v2p | 交付质量闸门检查项（原短码 `QG-xxx`，等价全称 `V2P-QG-xxx`） | `V2P-QG-101` |
+| `V2P-OR-*` | v2p | 编排层冲突 / 状态告警 | `V2P-OR-001` |
+| `RFE-RL-*` | rfe | 规则库红线与阻断规则 | `RFE-RL-RULE-ECOM-0001` |
+| `RFE-PT-*` | rfe | 踩坑记忆（坑卡） | `RFE-PT-PIT-0001` |
+| `RFE-DR-*` | rfe | 知识库自检诊断 | `RFE-DR-001` |
+
+四条硬规则：① 前缀全局唯一；② 编码幂等（已带前缀不再叠加）；③ 同一编码可跨节引用，但按报告末尾「问题编码索引（去重）」计数，红线节与资源底线节按编码集合去重过滤；④ `v2p gate` 仍输出短码 `QG-xxx`（自测依赖），报告引用时用全称。完整规范见 [`references/issue-codes.md`](references/issue-codes.md)。
+
+固定诊断码：`RFE-DR-001` 重复 ID、`RFE-DR-002` 缺 `rule` 字段、`RFE-DR-003` 缺 fingerprint、`RFE-DR-101` 季度复核到期（91-180 天）、`RFE-DR-102` 过期规则（>180 天或无核实日期）。
+
+---
+
+## 附录 C · 长期维护：季度复核机制
+
+1. 每季度人工核对官方入口后执行 `rfe meta --set-review --note "..."` 记录复核日期。
+2. `rfe doctor` 分级标记：91-180 天未核实 → `RFE-DR-101`；超过 180 天或无核实日期 → `RFE-DR-102`。
+3. 逐条核实后执行 `rfe verify --id <ID> --confidence high`。
+4. 每份输出报告强制附带知识库复核时间戳与 0.3 节完整免责声明。
+5. 推广路径固定为：**自用提效 → GitHub 开源 Release**；拦截公开 SaaS，明确禁止公开 SaaS 产品化。
+
+---
+
+## 附录 D · GitHub Release 部署与发版校验
+
+1. 从 GitHub Release 下载 `vague-to-product-v2.3.0.zip`，核对页面给出的 **SHA256**。
+2. 解压到 `~/.workbuddy/skills/<技能名>/`（WorkBuddy）或 `~/.codex/skills/<技能名>/`（Codex CLI）；fuzzy-reverse-flow-v1.3.0.zip 需同级放置（或用 `RFE_SCRIPT` 指定）。
+3. 执行 `python scripts/selftest.py`，应输出「全部通过」；再跑 `rfe init` → `rfe migrate --check`，完成 0.2 节 12 项自检。
+4. 维护者发版固定顺序：**改代码 → 更新 README.md 与 使用说明.txt → `python _check_docs.py` → 组装发布包 → `python _check_docs.py --zip dist/<包名>.zip` → 提交推送 → 上传 / 替换 Release 附件**。两轮校验全部 PASS 才允许发版。
+
+---
 
 ## 许可证 | License
 

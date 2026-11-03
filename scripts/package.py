@@ -28,7 +28,8 @@ EXCLUDE_DIRS = {"__pycache__", ".git", "dist", "node_modules", ".vscode", ".idea
                 "kb_local", "examples"}
 EXCLUDE_GLOBS = (".kb", ".kb*", "*.pyc", "*.pyo", "*.tmp", ".DS_Store", "Thumbs.db")
 
-REQUIRED = ["SKILL.md", "README.md", "LICENSE", "CHANGELOG.md", "PROVENANCE.md",
+REQUIRED = ["SKILL.md", "README.md", "使用说明.txt", "LICENSE", "CHANGELOG.md", "PROVENANCE.md",
+            "_check_docs.py", "references/issue-codes.md",
             "scripts/v2p.py", "scripts/qgate.py", "scripts/orchestrate.py",
             "scripts/bridge.py", "scripts/selftest.py"]
 

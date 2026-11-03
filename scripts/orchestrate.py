@@ -57,6 +57,15 @@ def _plans_dir() -> Path:
     return p
 
 
+def issue_code(kind: str, raw) -> str:
+    """统一问题编码：跨 v2p / rfe 全局唯一；已带前缀的原样返回，避免重复加前缀。"""
+    prefix = bridge.ISSUE_PREFIX.get(kind, "V2P-OR")
+    val = str(raw or "").strip()
+    if val.upper().startswith(("V2P-", "RFE-")):
+        return val
+    return f"{prefix}-{val}" if val else f"{prefix}-UNKNOWN"
+
+
 def _slugify(text: str) -> str:
     s = re.sub(r"[^\w\u4e00-\u9fff]+", "-", (text or "").strip())[:24].strip("-")
     return s or "plan"
@@ -88,7 +97,7 @@ def _milestone_lines(redlines: list) -> list:
     for r in redlines:
         lt = (r.get("lead_time") or "").strip()
         if lt:
-            leads.append(f"{r.get('id')}（{lt}）：{r.get('rule', '')[:46]}…")
+            leads.append(f"{issue_code('rule', r.get('id'))}（{lt}）：{r.get('rule', '')[:46]}…")
     lines = [
         "## 倒排里程碑（骨架，交付日往回排）",
         "",
@@ -172,6 +181,7 @@ def cmd_plan(args) -> int:
         f"> 生成：{date.today().isoformat()}　形态：{form_label}　深度：{code}（{score}/10）"
         f"　轮次预算：{rmin}–{rmax if rmax < 99 else '∞'}",
         f"> 知识库{stamp}",
+        f"> 问题编码：V2P-QG-*（质量闸门）｜RFE-RL-*（规则红线）｜RFE-PT-*（坑卡）｜RFE-DR-*（库自检）｜V2P-OR-*（编排告警）",
         "",
         "---",
         "",
@@ -207,20 +217,20 @@ def cmd_plan(args) -> int:
         rep += [f"召回红线 {len(reds)} 条，**全部为阻断项**，不满足任何一条 = 不能上线：", ""]
         for r in reds:
             lead = f"（提前期 {r['lead_time']}）" if r.get("lead_time") else ""
-            rep.append(f"- **{r.get('id')}** {r.get('rule')}{lead}")
+            rep.append(f"- **{issue_code('rule', r.get('id'))}** {r.get('rule')}{lead}")
             if r.get("basis"):
                 rep.append(f"  依据：{r['basis']}")
     else:
         rep += ["- 未召回该领域红线。仍按通用四件事自查：主体资质 / 备案许可 / 个人信息 / 内容与广告。",
                 "- 如需更准，补充行业关键词重跑，或单独 `rfe recall --query \"...\"`。"]
     raw_rows = bridge.recall(text, top=20, severity="blocker")
-    shown = {r.get("id") for r in reds}  # 红线一节已展示过的不再重复
+    shown = {issue_code("rule", r.get("id")) for r in reds}  # 统一编码去重：红线节已展示的不再重复
     blockers = [row["rule"] for row in raw_rows
-                if row.get("rule", {}).get("id") not in shown]
+                if issue_code("rule", row.get("rule", {}).get("id")) not in shown]
     rep += ["", "### 资源底线与风险（blocker 级，红线之外补充）", ""]
     if blockers:
         for b in blockers:
-            rep.append(f"- **{b.get('id')}** [{b.get('domain')}｜{b.get('subdomain', '')}] {b.get('rule', '')}")
+            rep.append(f"- **{issue_code('rule', b.get('id'))}** [{b.get('domain')}｜{b.get('subdomain', '')}] {b.get('rule', '')}")
             if b.get("lead_time"):
                 rep.append(f"  提前期：{b['lead_time']}")
             if b.get("note"):
@@ -233,7 +243,7 @@ def cmd_plan(args) -> int:
         rep += ["", "## 历史坑预警（来自你自己的踩坑库）", ""]
         for pr in pits:
             p = pr.get("pitfall", {})
-            rep.append(f"- **{p.get('id')}** [{p.get('domain')}] {p.get('trap')}")
+            rep.append(f"- **{issue_code('pitfall', p.get('id'))}** [{p.get('domain')}] {p.get('trap')}")
             if p.get("guard"):
                 rep.append(f"  预防：{p['guard']}")
     rep += [
@@ -247,6 +257,30 @@ def cmd_plan(args) -> int:
         f"3. 手测清单：`v2p gate manual -f {primary} -d {code} --out 手测清单.md`　（测完 --verify 留痕）",
         f"4. 沉淀：`v2p settle pitfall ...` + `v2p settle rule ...`（先入待审区）→ `v2p settle done`",
         "",
+        "---",
+        "",
+        "## 问题编码索引（去重）",
+        "",
+    ]
+    uniq_codes = sorted(set(re.findall(
+        r"(?:V2P|RFE)-[A-Z]{2,3}-[A-Z0-9-]+", chr(10).join(rep))))
+    if uniq_codes:
+        for _c in uniq_codes:
+            rep.append(f"- `{_c}`")
+        rep += ["", f"共 {len(uniq_codes)} 个唯一编码；同一问题在红线节、资源底线节与倒排里程碑节只引用，不重复告警。", ""]
+    else:
+        rep += ["- 本次未召回带编码的规则或坑卡（知识库为空或查询无命中）。", ""]
+    rep += [
+        "---",
+        "",
+        "## 完整免责声明与使用边界",
+        "",
+        f"> 生成日期：{date.today().isoformat()}　{stamp}",
+        "",
+    ]
+    for _line in bridge.DISCLAIMER_SECTIONS:
+        rep += [_line, ""]
+    rep += [
         "---",
         "",
         f"> {DISCLAIMER}",
@@ -421,7 +455,7 @@ def cmd_change(args) -> int:
         print(f"  ⚠ 新增红线 {len(added)} 条（变更引入的新合规要求）：")
         for r in added:
             lead = f"（提前期 {r['lead_time']}）" if r.get("lead_time") else ""
-            print(f"    - {r.get('id')} {r.get('rule','')[:56]}…{lead}")
+            print(f"    - {issue_code('rule', r.get('id'))} {r.get('rule','')[:56]}…{lead}")
     else:
         print("  合规面无新增红线。")
     if removed:
@@ -586,7 +620,51 @@ def cmd_viz(args) -> int:
         out.write_text(svg, encoding="utf-8")
         print(f"已生成闸门分布图：{out}")
         return 0
-    print("未知图类型，可用：depth / gates")
+    if args.what == "heatmap":
+        v2p = _load_v2p()
+        text = (args.text or "").strip()
+        form, _, _ = v2p.infer_form(text) if text else ("app", [], None)
+        sig = v2p.infer_signals(text, form) if text else {}
+        levels = ["D0", "D1", "D2", "D3", "D4"]
+        keys = [k for k, _, _ in v2p.SIGNALS]
+        labels = [lab for _, lab, _ in v2p.SIGNALS]
+        cell, gap, left, top = 96, 8, 150, 78
+        W = left + len(levels) * (cell + gap) + 30
+        H = top + len(keys) * (cell + gap) + 76
+        parts = [
+            '<text x="20" y="30" font-size="17" font-weight="bold" fill="#1a4d8f">'
+            '五信号 × 深度等级 关注热力图</text>',
+            f'<text x="20" y="52" font-size="12" fill="#666">'
+            f'形态：{v2p.FORMS[form]["name"]}　颜色越深＝该深度下该信号需投入的追问权重越高</text>',
+        ]
+        for j, lv in enumerate(levels):
+            x = left + j * (cell + gap)
+            parts.append(f'<text x="{x + cell / 2:.0f}" y="{top - 12}" text-anchor="middle" '
+                         f'font-size="13" font-weight="bold" fill="#333">{lv}</text>')
+        for i, (k, lab) in enumerate(zip(keys, labels)):
+            y = top + i * (cell + gap)
+            parts.append(f'<text x="20" y="{y + cell / 2 + 5:.0f}" font-size="13" fill="#333">{lab}</text>')
+            base = int(sig.get(k, 0) or 0)
+            for j in range(len(levels)):
+                w = min(1.0, (base / 2) * (0.30 + 0.175 * j))
+                rr = int(238 + (26 - 238) * w)
+                gg = int(243 + (77 - 243) * w)
+                bb = int(250 + (143 - 250) * w)
+                fg = "#ffffff" if w > 0.55 else "#1f2d3d"
+                x = left + j * (cell + gap)
+                parts.append(f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="6" '
+                             f'fill="rgb({rr},{gg},{bb})" stroke="#d0d7e2"/>')
+                parts.append(f'<text x="{x + cell / 2:.0f}" y="{y + cell / 2 + 5:.0f}" '
+                             f'text-anchor="middle" font-size="14" fill="{fg}">{w:.2f}</text>')
+        ly = top + len(keys) * (cell + gap) + 18
+        parts.append(f'<text x="20" y="{ly}" font-size="11" fill="#888">'
+                     '权重 = 信号得分(0-2)/2 × 深度系数(0.30→1.00)；仅作追问优先级参考，非合规结论。</text>')
+        svg = _svg_wrap("".join(parts), W, H)
+        out = Path(args.out) if args.out else Path.cwd() / "v2p-heatmap.svg"
+        out.write_text(svg, encoding="utf-8")
+        print(f"已生成信号热力图：{out}")
+        return 0
+    print("未知图类型，可用：depth / gates / heatmap")
     return 2
 
 
@@ -630,8 +708,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("name", nargs="?", default="")
     s.set_defaults(func=cmd_use)
 
-    s = sub.add_parser("viz", help="轻量可视化：depth / gates")
-    s.add_argument("what", choices=["depth", "gates"])
+    s = sub.add_parser("viz", help="轻量可视化：depth / gates / heatmap")
+    s.add_argument("what", choices=["depth", "gates", "heatmap"])
     s.add_argument("--text", "-t", default="")
     s.add_argument("--form", "-f", default="app")
     s.add_argument("--out", "-o", default="")

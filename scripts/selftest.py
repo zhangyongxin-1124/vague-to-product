@@ -413,6 +413,15 @@ def main() -> int:
               "需求挖掘" in rb and "合规排雷" in rb)
         check("报告含倒排里程碑", "倒排里程碑" in rb)
         check("报告含知识库复核时间戳", "复核时间戳" in rb)
+        check("报告含完整免责声明", "完整免责声明与使用边界" in rb)
+        check("报告含问题编码索引（去重）", "问题编码索引（去重）" in rb)
+        check("报告声明禁止公开 SaaS", "禁止封装为公开 SaaS" in rb)
+
+    print("[25b] viz heatmap：五信号 × 深度等级热力图")
+    hm = home / "heatmap.svg"
+    r = run("viz", "heatmap", "-t", "我要做一个招聘小程序", "--out", str(hm), home=home)
+    check("viz heatmap 生成 SVG", r.returncode == 0 and hm.exists()
+          and "<svg" in hm.read_text(encoding="utf-8"), r.stdout[:200])
 
     print("[26] settle：未沉淀拦截 → 沉淀入待审 → done 放行")
     if states:

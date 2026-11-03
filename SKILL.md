@@ -1,8 +1,8 @@
 ---
 name: vague-to-product
-description: 模糊需求挖掘与产出生成器（Vague to Product）。把一句模糊的想法（"我想做个XX""我有个点子""不知道要做成什么样"）挖成清晰可验收的需求，并直接产出成品——不限于软件：小程序/网页/App、文档报告、表格台账、图形图像、3D 模型、音视频、资料知识库、实物与服务方案。核心机制：先判产出形态，再按影响半径/不可逆性/未知量/复杂度/复用性五个信号动态决定挖多深（D0 直接做到 D4 不限轮次分批深挖），并内置六道交付质量闸门（完整态/交互/布局/数据/工程/可维护，65 项）加一道合规闸门（来自 rfe 知识库，红线全部为阻断）。v2.2.0 起为编排主入口：`v2p plan` 一条命令同时输出挖掘计划+合规红线+资源底线+倒排里程碑（内部单向调用 fuzzy-reverse-flow，用户无需感知）；`v2p settle` 强制沉淀（规则/坑卡先入待审区）；`v2p change` 需求变更自动重跑合规与工期推演；`v2p gate manual` 手测清单补静态扫描盲区；`v2p use` 多项目口味隔离。当出现"我想做/我想有个东西能/帮我梳理需求/这个该有什么内容/我有个想法/不知道从哪开始/做出来感觉不对/为什么看着很业余/这事能不能做"时使用。
+description: 模糊需求挖掘与产出生成器（Vague to Product）。把一句模糊的想法（"我想做个XX""我有个点子""不知道要做成什么样"）挖成清晰可验收的需求，并直接产出成品——不限于软件：小程序/网页/App、文档报告、表格台账、图形图像、3D 模型、音视频、资料知识库、实物与服务方案。核心机制：先判产出形态，再按影响半径/不可逆性/未知量/复杂度/复用性五个信号动态决定挖多深（D0 直接做到 D4 不限轮次分批深挖），并内置六道交付质量闸门（完整态/交互/布局/数据/工程/可维护，65 项）加一道合规闸门（来自 rfe 知识库，红线全部为阻断）。v2.2.0 起为编排主入口：`v2p plan` 一条命令同时输出挖掘计划+合规红线+资源底线+倒排里程碑（内部单向调用 fuzzy-reverse-flow，用户无需感知）；`v2p settle` 强制沉淀（规则/坑卡先入待审区）；`v2p change` 需求变更自动重跑合规与工期推演；`v2p gate manual` 手测清单补静态扫描盲区；`v2p use` 多项目口味隔离。当出现"我想做/我想有个东西能/帮我梳理需求/这个该有什么内容/我有个想法/不知道从哪开始/做出来感觉不对/为什么看着很业余/这事能不能做"时使用。 v2.3.0 新增：`v2p viz heatmap` 五信号×深度热力图、统一问题编码（V2P-QG / V2P-OR / RFE-RL / RFE-PT / RFE-DR，报告带去重编码索引）、每份报告强制附带完整免责声明 7 条与知识库复核时间戳；明确三档能力边界 A/B/C 与禁止公开 SaaS 产品化。
 description_en: Vague to Product — an adaptive requirement-mining engine with a built-in delivery quality gate. Turns a one-line vague idea into a concrete, testable deliverable of any form (app, document, spreadsheet, graphic, 3D model, video, knowledge base, physical product). Depth scales with impact, irreversibility, uncertainty, complexity and reusability (D0 one-shot to D4 multi-batch deep dive). A 6-gate quality checklist (65 items) forces coverage of empty/error/edge/concurrency/permission states before delivery.
-version: 2.2.0
+version: 2.3.0
 license: MIT
 ---
 
@@ -451,3 +451,14 @@ v2p gate redteam -f app                      # 12 步破坏性测试，照着点
 v2p gate scan -p ./项目                       # 静态筛查（启发式，非判据）
 v2p gate stats                               # 65 项分布
 ```
+
+---
+
+## 使用边界与能力档（v2.3.0 / v1.3.0 硬约束）
+
+1. 本技能是本地文件 + Python CLI + 落盘知识库，**没有 HTTP 服务 / MCP Server / 云端 API**；MIT 只授权使用，不提供远程调用入口。
+2. 能力分三档：A 档（宿主能读文件+执行命令，完整能力）、B 档（本地召回规则后注入模型 API）、C 档（网页聊天 / 手机 App，只能降级到方法论提示词）。**网页聊天与手机只能降级到 C 档**，不得伪装成能读取规则库。
+3. 调用前必须完成 README「零、使用前提与能力边界」的 12 项自检清单。
+4. **允许**：自用、内网团队复用（如需服务化仅绑定 127.0.0.1 环回）、GitHub 开源与 Release。**禁止**：公开 SaaS 产品化、对外经营性 API、面向不特定公众的付费服务、把规则库当商业合规数据服务售卖。
+5. 每份输出报告强制附带知识库复核时间戳与完整免责声明 7 条；规则为经验总结，不构成法律意见，上线前必须人工向官方核实。
+6. 跨工具告警使用统一问题编码，规范见 `references/issue-codes.md`；发版一致性由 `_check_docs.py` 强制校验。

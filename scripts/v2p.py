@@ -1341,8 +1341,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("name", nargs="?", default="")
     s.set_defaults(func=lambda a: _orchestrate(["use"] + ([a.name] if a.name else [])))
 
-    s = sub.add_parser("viz", help="轻量可视化：depth / gates")
-    s.add_argument("what", choices=["depth", "gates"])
+    s = sub.add_parser("viz", help="轻量可视化：depth / gates / heatmap")
+    s.add_argument("what", choices=["depth", "gates", "heatmap"])
     s.add_argument("--text", "-t", default="")
     s.add_argument("--form", "-f", default="app")
     s.add_argument("--out", "-o", default="")
