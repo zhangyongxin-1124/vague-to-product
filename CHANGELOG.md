@@ -2,6 +2,24 @@
 
 本项目遵循语义化版本。
 
+## [2.5.0] - 2026-11-04
+
+> 主题：**SWOT 改进清单落地——降门槛、攒案例、给方法、通接口、听反馈。**
+
+### Added
+- **小白上手三件套**：`docs/quick-start.md`（三步装好卡）、`docs/FAQ.md`（12 问速答）、`docs/安装演示脚本-3分钟.md`（安装视频分镜脚本，照着录即成片）。
+- **案例库 `examples/`**：5 个案例（真实：闹钟 App、娱乐小程序摘要；明确标注的演示案例：社区奶茶店、商业计划书、进销存台账），附 `examples/README.md` 对照索引；随包分发。
+- **铁律 21「交付必附自查清单（阶段产出 D）」**：`assets/templates/交付自查清单.md`——通用 5 项 + 按形态追加，逐条=具体动作+预期结果，把风险从「提醒」升级为「给了方法」。
+- **快速模式（SKILL.md 5.1）**：用户说"少问点，直接做"→ 追问压缩到最少两轮、默认假设兜底、产出标注「快速模式产物」，合规红线照常召回。
+- **本地 stdio MCP Server（P2-3 落地）**：`scripts/mcp_server.py`，零依赖、只读工具（v2p_route / v2p_gate_list / v2p_issue_codes / v2p_disclaimer / v2p_selfcheck）、无网络监听；禁止公开 SaaS 边界不变。
+- **用户反馈渠道**：`.github/ISSUE_TEMPLATE/` Bug 反馈与用后感双模板。
+- **英文精简版 README**：`README_EN.md`（国际用户快速上手）。
+
+### Changed
+- P2-3 表述由「本期不实施」更新为「已实施为仅本地形态」；能力档与边界条款同步。
+- `package.py`：`examples/` 由排除改为随包分发；REQUIRED 增加 `scripts/mcp_server.py`、`docs/*`、`README_EN.md`、`assets/templates/交付自查清单.md`。
+- `_check_docs.py` / `selftest.py`：新增 v2.5.0 事实断言（MCP stdio 冒烟、案例库计数、自查清单模板、快速模式关键词）。
+
 ## [2.4.0] - 2026-11-04
 
 > 主题：**终局交付铁律——先按用户目标产出最终产品（不论可否上架），再用 fuzzy-reverse-flow 合规流程报告收口（后续怎么走、怎么安排）。**

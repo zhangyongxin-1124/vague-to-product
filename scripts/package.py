@@ -7,7 +7,7 @@
     python scripts/package.py --list     # 只列会打包哪些文件
     python scripts/package.py --no-check # 跳过溯源检测（不建议）
 
-强制排除：__pycache__ / dist / .git / 本地知识库与私人档案
+强制排除：__pycache__ / dist / .git / 本地知识库与私人档案（examples/ 案例库自 v2.5.0 起随包分发）
 可复现：zip 内时间戳固定为 1980-01-01，同一份源码两次打包 SHA256 一致。
 """
 
@@ -25,13 +25,20 @@ SCRIPTS = Path(__file__).resolve().parent
 SKILL_ROOT = SCRIPTS.parent
 
 EXCLUDE_DIRS = {"__pycache__", ".git", "dist", "node_modules", ".vscode", ".idea",
-                "kb_local", "examples"}
+                "kb_local"}
 EXCLUDE_GLOBS = (".kb", ".kb*", "*.pyc", "*.pyo", "*.tmp", ".DS_Store", "Thumbs.db")
 
-REQUIRED = ["SKILL.md", "README.md", "使用说明.txt", "LICENSE", "CHANGELOG.md", "PROVENANCE.md",
-            "_check_docs.py", "references/issue-codes.md",
+REQUIRED = ["SKILL.md", "README.md", "README_EN.md", "使用说明.txt", "LICENSE", "CHANGELOG.md",
+            "PROVENANCE.md", "_check_docs.py", "references/issue-codes.md",
             "scripts/v2p.py", "scripts/qgate.py", "scripts/orchestrate.py",
-            "scripts/bridge.py", "scripts/selftest.py"]
+            "scripts/bridge.py", "scripts/selftest.py", "scripts/mcp_server.py",
+            "docs/quick-start.md", "docs/FAQ.md", "docs/安装演示脚本-3分钟.md",
+            "assets/templates/交付自查清单.md", "examples/README.md",
+            "examples/01-闹钟App-从一句话到PRD与终局交付.md",
+            "examples/02-娱乐小程序-逆向施工图摘要.md",
+            "examples/03-实体店-社区奶茶店可行性推演.md",
+            "examples/04-文档类-商业计划书十页成稿.md",
+            "examples/05-表格类-小卖部进销存台账.md"]
 
 FIXED_DATE = (1980, 1, 1, 0, 0, 0)
 

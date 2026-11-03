@@ -528,6 +528,57 @@ def main() -> int:
           tpl.is_file() and all(k in tpl.read_text(encoding="utf-8")
                                 for k in ("结论档位", "已触发红线清单", "办证", "倒排周计划", "免责声明")))
 
+    print("[33] v2.5.0：快速模式 / 自查清单 / MCP / 三件套 / 案例库")
+    check("SKILL.md 含铁律 21 与阶段产出 D",
+          "21. **交付必附自查清单" in skill_txt and "7.4.3 阶段产出 D" in skill_txt)
+    check("SKILL.md 含快速模式 5.1",
+          "5.1 快速模式" in skill_txt and "快速模式产物" in skill_txt)
+    card = ROOT / "assets" / "templates" / "交付自查清单.md"
+    check("交付自查清单模板存在且结构完整",
+          card.is_file() and all(k in card.read_text(encoding="utf-8")
+                                 for k in ("具体动作", "预期结果", "按形态追加", "你要怎么自己验证")))
+    for d in ("docs/quick-start.md", "docs/FAQ.md", "docs/安装演示脚本-3分钟.md"):
+        f = ROOT / d
+        check(f"{d} 存在且非空", f.is_file() and len(f.read_text(encoding="utf-8")) > 200)
+    exr = ROOT / "examples" / "README.md"
+    check("examples/ 索引存在且列出 5 个案例",
+          exr.is_file() and all(f"{i}-" in exr.read_text(encoding="utf-8") for i in ("01", "02", "03", "04", "05")))
+    check("案例库含真实/演示双标注",
+          "【真实】" in exr.read_text(encoding="utf-8") and "演示性" in exr.read_text(encoding="utf-8"))
+    check("README_EN.md 存在且含英文边界声明",
+          (ROOT / "README_EN.md").is_file()
+          and "not legal advice" in (ROOT / "README_EN.md").read_text(encoding="utf-8").lower())
+    check("GitHub 反馈模板存在",
+          (ROOT / ".github" / "ISSUE_TEMPLATE" / "bug反馈.md").is_file()
+          and (ROOT / ".github" / "ISSUE_TEMPLATE" / "用后感反馈.md").is_file())
+    mcp = ROOT / "scripts" / "mcp_server.py"
+    if mcp.is_file():
+        mt = mcp.read_text(encoding="utf-8")
+        check("mcp_server.py 无网络监听（不 import socket/http/urllib）",
+              all(x not in mt for x in ("import socket", "import http", "urllib")))
+        try:
+            reqs = [
+                json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}),
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}),
+                json.dumps({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+                            "params": {"name": "v2p_disclaimer", "arguments": {}}}),
+            ]
+            r = subprocess.run([sys.executable, str(mcp)], input="\n".join(reqs) + "\n",
+                               capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=60, cwd=str(ROOT))
+            lines = [json.loads(l) for l in r.stdout.splitlines() if l.strip()]
+            byid = {m.get("id"): m.get("result", {}) for m in lines}
+            check("MCP initialize 应答含 serverInfo",
+                  byid.get(1, {}).get("serverInfo", {}).get("name") == "vague-to-product")
+            check("MCP tools/list 暴露 5 个只读工具",
+                  len(byid.get(2, {}).get("tools", [])) == 5)
+            check("MCP tools/call 免责声明可用",
+                  "非法律意见" in byid.get(3, {}).get("content", [{}])[0].get("text", ""))
+        except Exception as e:
+            check("MCP stdio 冒烟测试", False, repr(e)[:200])
+    else:
+        check("scripts/mcp_server.py 存在", False)
+
     print(f"\n结果：通过 {len(PASS)} 项，失败 {len(FAIL)} 项")
     if FAIL:
         print("失败项：" + "、".join(FAIL))

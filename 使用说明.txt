@@ -1,13 +1,13 @@
 ================================================================================
 vague-to-product（模糊需求挖掘与产出生成器） 使用说明
-版本：v2.4.0    对应 fuzzy-reverse-flow v1.3.0
+版本：v2.5.0    对应 fuzzy-reverse-flow v1.4.0
 许可证：MIT License    Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
 本文件与 README.md 同为发版必检文档，内容必须与代码完全一致。
 ================================================================================
 
 【0. 使用前必读：三档能力边界】
 本项目是「本地文件 + Python CLI + 落盘知识库」，仓库内没有任何 HTTP 服务、
-MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的是「能不能拿去用」，
+HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络监听），不存在可供远程调用的地址。MIT 解决的是「能不能拿去用」，
 不解决「别人怎么连上」。能否调用、能调用到什么程度，取决于宿主能力，分三档：
 
   能力档 A（完整）  条件：宿主支持「读文件 + 执行命令」（tool use）
@@ -57,7 +57,7 @@ MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的�
   安装位置      WorkBuddy: ~/.workbuddy/skills/<技能名>/
                 Codex CLI: ~/.codex/skills/<技能名>/
 
-【3. 命令清单（v2.4.0，全部零依赖纯标准库）】
+【3. 命令清单（v2.5.0，全部零依赖纯标准库）】
   统一入口（编排层，单向调用 rfe，用户无需感知）
     v2p plan -t "你的想法"              一份报告 = 需求挖掘 + 合规红线 +
                                         资源底线 + 倒排里程碑 + 完整免责
@@ -90,12 +90,33 @@ MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的�
     v2p viz depth                       五信号雷达 SVG
     v2p viz gates -f app                闸门分布条形 SVG
     v2p viz heatmap -t "原话"           五信号 × D0-D4 关注热力图 SVG（v2.3.0 新增）
+  快速模式（v2.5.0：急性子通道）
+    对 AI 说「少问点，直接做」           追问压缩到最少两轮，其余默认假设兜底，
+                                        产出标注「快速模式产物」，合规红线照常召回
+  终局交付自查（v2.5.0 铁律 21 / 阶段产出 D）
+    每次交付必附一页「你要怎么自己验证」，骨架见
+    assets/templates/交付自查清单.md：通用 5 项 + 按形态追加，
+    逐条 = 具体动作 + 预期结果，禁止写「请自行检查」。
+  本地 MCP Server（v2.5.0：P2-3 已实施为仅本地形态）
+    python scripts/mcp_server.py        stdio 传输、零依赖、只读工具、无网络监听
+    工具：v2p_route / v2p_gate_list / v2p_issue_codes / v2p_disclaimer / v2p_selfcheck
+    客户端配置示例（任一支持 stdio MCP 的宿主）：
+      command: python
+      args:    ["<技能目录>/scripts/mcp_server.py"]
+    仅允许自用与内网复用，禁止公网暴露与公开 SaaS。
+  小白三件套与案例库（v2.5.0）
+    docs/quick-start.md                 三步装好卡（图文）
+    docs/FAQ.md                         12 问常见问题速答
+    docs/安装演示脚本-3分钟.md           安装视频分镜脚本（照着录即成片）
+    examples/                           案例库：真实（闹钟App/娱乐小程序摘要）
+                                        + 明确标注的演示案例，附对照索引
+    README_EN.md                        英文精简版 README
   自测与打包
-    python scripts/selftest.py          端到端自测（v2.4.0：123 项）
+    python scripts/selftest.py          端到端自测
     python scripts/package.py           可复现打包到 dist/（固定时间戳）
     python scripts/provenance_check.py  原创性溯源扫描
 
-  rfe 侧（fuzzy-reverse-flow v1.3.0）
+  rfe 侧（fuzzy-reverse-flow v1.4.0）
     rfe init / recall / infer / add / pitfall / meta / audit / stats /
     export / verify / doctor / migrate
     rfe migrate --check                只报告不写入
@@ -145,18 +166,22 @@ MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的�
         把规则库当作商业合规数据服务售卖；删除或改写 MIT 署名。
   理由：规则是经验总结而非合规意见，公开对外提供会构成事实上的
         「合规意见服务」，带来法律风险。本项目不做、不建议、不授权。
-  P2-3「简易 MCP Server」本期不实施（属择机迭代）：如未来实施，
-  仅限内网环回复用，仍禁止任何公网暴露与公开 SaaS 形态。
+  P2-3「简易 MCP Server」已实施为仅本地形态（v2.5.0）：stdio 传输、
+  零依赖、只读工具、无网络监听；仅限自用与内网环回复用，
+  仍禁止任何公网暴露与公开 SaaS 形态。
 
 【8. 长期维护：季度复核机制】
   8.1 每季度人工核对官方入口后执行 rfe meta --set-review 记录复核日期。
-  8.2 rfe doctor 分级标记：91-180 天未核实 → RFE-DR-101；
+  8.2 rfe doctor 分级标记：法规类规则超 90 天未核实 → RFE-DR-103
+      （法规变动快，独立短周期提醒，信息源与快更流程见
+      fuzzy-reverse-flow 的 references/regulation-watch.md）；
+      91-180 天未核实 → RFE-DR-101；
       超过 180 天或无核实日期 → RFE-DR-102。
   8.3 逐条核实后执行 rfe verify --id <ID> --confidence high。
   8.4 每份 v2p plan 报告强制附带知识库复核时间戳与第 6 节完整免责声明。
 
 【9. 安装与 Release 部署（降低部署成本）】
-  9.1 从 GitHub Release 下载 vague-to-product-v2.4.0.zip，核对页面 SHA256。
+  9.1 从 GitHub Release 下载 vague-to-product-v2.5.0.zip，核对页面 SHA256。
   9.2 解压到 ~/.workbuddy/skills/vague-to-product/（WorkBuddy）
       或 ~/.codex/skills/vague-to-product/（Codex CLI）。
   9.3 同级放置 fuzzy-reverse-flow/（v2p plan 需要它做合规排雷；

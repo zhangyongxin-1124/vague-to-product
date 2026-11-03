@@ -256,6 +256,8 @@ def cmd_plan(args) -> int:
         f"2. 核查卡：{card_out}　（质量阻断 0 + 合规红线 0 才算过）",
         f"3. 手测清单：`v2p gate manual -f {primary} -d {code} --out 手测清单.md`　（测完 --verify 留痕）",
         f"4. 沉淀：`v2p settle pitfall ...` + `v2p settle rule ...`（先入待审区）→ `v2p settle done`",
+        f"5. 交付自查（铁律 21 / 阶段产出 D）：按 assets/templates/交付自查清单.md 生成一页"
+        f"「你要怎么自己验证」（通用 5 项 + 按形态追加，逐条=具体动作+预期结果），与成品一并交付",
         "",
         "---",
         "",

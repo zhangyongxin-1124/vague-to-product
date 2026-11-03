@@ -7,7 +7,7 @@
 
 - 著作权人：张勇鑫（Zhang Yongxin）
 - 许可证：MIT（见 LICENSE）
-- 版本：v2.4.0（2026-11-04）
+- 版本：v2.5.0（2026-11-04）
 
 ## 2. 代码来源
 
@@ -19,7 +19,7 @@
 | `scripts/bridge.py` | 原创 | v2.2.0 单向桥接：v2p → rfe（subprocess 调用，JSON 解析） |
 | `scripts/package.py` | 自有移植 | 从 fuzzy-reverse-flow v1.1.1 的 package.py 移植适配（同一著作权人） |
 | `scripts/provenance_check.py` | 自有移植 | 从 fuzzy-reverse-flow v1.1.1 移植（同一著作权人） |
-| `scripts/selftest.py` | 原创 | 72 项断言自测（v2.2.0 扩展） |
+| `scripts/selftest.py` | 原创 | 端到端断言自测（v2.2.0 起逐步扩展） |
 | `v2p.cmd` / `rfe.cmd` | 原创 | PATH 入口转发（纯 ASCII） |
 
 ## 3. 方法论与思想来源
@@ -41,6 +41,12 @@
 |---|---|
 | `assets/templates/*.md` | 原创（一页纸 PRD / 产出定型卡 / 交付质量核查卡 / MVP 功能分级表 / 合规流程报告） |
 | `assets/templates/taste-profile.json` | 原创（口味档案 schema） |
+| `assets/templates/交付自查清单.md` | 原创（v2.5.0 阶段产出 D 骨架） |
+| `scripts/mcp_server.py` | 原创（v2.5.0 本地 stdio MCP Server，零依赖、只读、无网络监听） |
+| `examples/*` | 原创：真实案例（著作权人本人项目推演与交付记录，隐私脱敏）+ 明确标注的演示性推演案例，无第三方数据 |
+| `docs/quick-start.md` / `docs/FAQ.md` / `docs/安装演示脚本-3分钟.md` | 原创（v2.5.0 小白上手三件套） |
+| `README_EN.md` | 原创（英文精简版，内容译写自中文 README） |
+| `.github/ISSUE_TEMPLATE/*` | 原创（Bug 反馈 / 用后感反馈模板） |
 | `assets/templates/冷启动坑卡.json` | 原创；内容来自著作权人本人真实项目踩坑记录（某笔记小程序、某招聘小程序、通用工程实践，项目名已脱敏），无第三方数据 |
 
 ## 5. 引用的外部规范（仅名称引用，非文本复制）

@@ -2,7 +2,7 @@
 name: vague-to-product
 description: 模糊需求挖掘与产出生成器（Vague to Product）。把一句模糊的想法（"我想做个XX""我有个点子""不知道要做成什么样"）挖成清晰可验收的需求，并直接产出成品——不限于软件：小程序/网页/App、文档报告、表格台账、图形图像、3D 模型、音视频、资料知识库、实物与服务方案。核心机制：先判产出形态，再按影响半径/不可逆性/未知量/复杂度/复用性五个信号动态决定挖多深（D0 直接做到 D4 不限轮次分批深挖），并内置六道交付质量闸门（完整态/交互/布局/数据/工程/可维护，65 项）加一道合规闸门（来自 rfe 知识库，红线全部为阻断）。v2.2.0 起为编排主入口：`v2p plan` 一条命令同时输出挖掘计划+合规红线+资源底线+倒排里程碑（内部单向调用 fuzzy-reverse-flow，用户无需感知）；`v2p settle` 强制沉淀（规则/坑卡先入待审区）；`v2p change` 需求变更自动重跑合规与工期推演；`v2p gate manual` 手测清单补静态扫描盲区；`v2p use` 多项目口味隔离。当出现"我想做/我想有个东西能/帮我梳理需求/这个该有什么内容/我有个想法/不知道从哪开始/做出来感觉不对/为什么看着很业余/这事能不能做"时使用。 v2.3.0 新增：`v2p viz heatmap` 五信号×深度热力图、统一问题编码（V2P-QG / V2P-OR / RFE-RL / RFE-PT / RFE-DR，报告带去重编码索引）、每份报告强制附带完整免责声明 7 条与知识库复核时间戳；明确三档能力边界 A/B/C 与禁止公开 SaaS 产品化。 v2.4.0 新增终局交付铁律（19/20）：需求挖掘完成后必须**先按用户目标产出最终产品**（不论合规结论是绿灯、黄灯还是红牌，合规风险写进报告，不构成停在文档的理由；唯一例外是用户明确说"本轮只要方案"），交付时用 fuzzy-reverse-flow **收口一份合规流程报告**（结论档位 + 已触发红线 + 办什么证 + 倒排周计划），让用户明确"后续怎么走、怎么安排"。流程终点只能是「阶段产出 B 最终产品 + 阶段产出 C 合规流程报告」，绝不停在 PRD / 定型卡。
 description_en: Vague to Product — an adaptive requirement-mining engine with a built-in delivery quality gate. Turns a one-line vague idea into a concrete, testable deliverable of any form (app, document, spreadsheet, graphic, 3D model, video, knowledge base, physical product). Depth scales with impact, irreversibility, uncertainty, complexity and reusability (D0 one-shot to D4 multi-batch deep dive). A 6-gate quality checklist (65 items) forces coverage of empty/error/edge/concurrency/permission states before delivery.
-version: 2.4.0
+version: 2.5.0
 license: MIT
 ---
 
@@ -50,6 +50,7 @@ license: MIT
 18. **沉淀是交付强制收尾**：`v2p settle done` 之前不得标记交付完成；本次踩的坑与验证过的经验必须写回（先入待审区）。确无可沉淀内容才允许 `settle done --skip <理由>`。每份对外交付的报告必须带免责提示与知识库复核时间戳。
 19. **终局交付：挖掘的终点是产品，不是文档**。回读确认通过（或默认假设兜底）后，必须按用户目标产出**最终产品**（软件 = 可构建/可运行的完整工程，文档 = 成稿文件，表格 = 成品表……见 7.4.1）。**合规结论不是停在文档的理由**：绿灯直接交；黄灯照交、红线写成"上架/经营前必须办理清单"；红牌（硬违法路线）也要产出"合法改造路线"的产品版本并明确告知边界。唯一例外：用户明确说"本轮只要方案/先不落地"。
 20. **交付必附合规流程报告（阶段产出 C）**：最终产品交付的同时，用 fuzzy-reverse-flow（`v2p plan` 已联动召回）收口一份「合规流程报告」——结论档位、已触发红线、要办什么证/备案、提前期与**倒排周计划**，让用户明确"后续怎么走、怎么安排"。**先产品、后合规收口，顺序不可倒置**；PRD / 定型卡是里程碑（阶段产出 A），永远不是流程终点。
+21. **交付必附自查清单（铁律 21）**：最终产品 + 合规流程报告交付的同时，必须按 `assets/templates/交付自查清单.md` 生成一页「你要怎么自己验证」——逐条写**具体动作 + 预期结果**（软件：装得起来、空态极端量试过；文档：结构完整、事实抽核；表格：公式抽查、口径一致），禁止写「请自行检查」。把合规与质量风险从「提醒」升级为「给了方法」。
 
 ---
 
@@ -170,6 +171,16 @@ license: MIT
 
 **每轮结束必做**：重算深度。出现「钱 / 公众 / 上架 / 已签约 / 新人群 / 用户说"我们这行不是这样"」，立刻升级，并告诉用户为什么要多问。
 
+### 5.1 快速模式（急性子通道，v2.5.0）
+
+用户明确说「少问点，直接做」「我很急」时启用：
+
+1. 追问压缩到**最少两轮**：第一轮只问必挖维度 + 边界（不做什么），第二轮确认默认假设；
+2. 其余全部走「默认假设 + 若相反则……」兜底，禁止再追加轮次；
+3. 产出必须标注**「快速模式产物：未经完整挖掘，假设清单见附录」**；
+4. 合规红线照常召回（红线不因快速模式豁免），但合规报告可简化为清单式；
+5. 交付后提醒用户：如需正式版，可说「按完整流程重跑一遍」。
+
 ---
 
 ## 6. 阶段三 · 需求定型
@@ -288,6 +299,10 @@ v2p spec check --file XX.md          # 自动识别该用哪套标准
 5. **免责 7 条 + 知识库复核时间戳**（强制附带，与 plan 报告同标准）
 
 > 模态切换（铁律 17）：进入 7.4.2 即切推演模态「少问多推」，直接引用 rfe 召回结果，不再向用户追问资质问题。
+
+#### 7.4.3 阶段产出 D：交付自查清单（必附，铁律 21）
+
+模板：`assets/templates/交付自查清单.md`。交付时按形态生成一页「你要怎么自己验证」，通用 5 项 + 形态追加项，每条=具体动作+预期结果；用户拿到成品后照着核对，不再凭感觉信任 AI。
 
 ---
 
@@ -461,13 +476,18 @@ CLI：`v2p profile show / set / veto / habit / cat / shape / depth`
 | `scripts/qgate.py` | 质量闸门：`list` / `card`（可注入合规节） / `manual`（手测清单+留痕校验） / `redteam` / `scan` / `stats`（65 项 + 合规闸门） |
 | `scripts/provenance_check.py` / `package.py` | 溯源检测（8 项痕迹筛查）与可复现打包（SHA256 固化） |
 | `assets/templates/冷启动坑卡.json` | 18 条真实项目踩坑（某笔记小程序/某招聘小程序/通用工程），已回填 rfe 坑库 |
-| `scripts/selftest.py` | 端到端自测（72 项） |
+| `scripts/selftest.py` | 端到端自测 |
 | `assets/templates/一页纸PRD.md` | 软件形态骨架 |
 | `assets/templates/产出定型卡.md` | 非软件七类形态通用骨架 |
 | `assets/templates/交付质量核查卡.md` | 状态矩阵 + 六道闸门填空卡 |
 | `assets/templates/合规流程报告.md` | 阶段产出 C 骨架：结论档位 / 已触发红线 / 办证清单 / 倒排周计划 / 免责 |
 | `assets/templates/MVP功能分级表.md` | P0/P1/P2 分级表 |
 | `assets/templates/taste-profile.json` | 口味档案初始结构 |
+| `assets/templates/交付自查清单.md` | **阶段产出 D 骨架**：通用 5 项 + 形态追加项，铁律 21 必附 |
+| `scripts/mcp_server.py` | **本地 stdio MCP Server（v2.5.0）**：零依赖、只读工具、无网络监听；仅自用/内网 |
+| `examples/` | 案例库：真实案例（闹钟App/娱乐小程序摘要）+ 标注清楚的演示案例，附对照索引 |
+| `docs/quick-start.md` / `docs/FAQ.md` / `docs/安装演示脚本-3分钟.md` | 小白三件套：三步装好卡、常见问题速答、安装视频分镜脚本 |
+| `README_EN.md` | 英文精简版 README（国际用户快速上手） |
 
 ---
 
@@ -500,13 +520,16 @@ v2p gate list -f doc                         # 文档只出 12 项，不问"加�
 v2p gate redteam -f app                      # 12 步破坏性测试，照着点
 v2p gate scan -p ./项目                       # 静态筛查（启发式，非判据）
 v2p gate stats                               # 65 项分布
+
+# 本地 MCP Server（v2.5.0：stdio 只读，无网络监听，禁止公开 SaaS）
+python scripts/mcp_server.py                 # 暴露 v2p_route/gate_list/issue_codes/disclaimer/selfcheck
 ```
 
 ---
 
-## 使用边界与能力档（v2.4.0 / v1.3.0 硬约束）
+## 使用边界与能力档（v2.5.0 / v1.4.0 硬约束）
 
-1. 本技能是本地文件 + Python CLI + 落盘知识库，**没有 HTTP 服务 / MCP Server / 云端 API**；MIT 只授权使用，不提供远程调用入口。
+1. 本技能是本地文件 + Python CLI + 落盘知识库；**内置一个本地 stdio MCP Server（`scripts/mcp_server.py`，只读工具、无网络监听）**，但**没有 HTTP 服务、云端 API**；MIT 只授权使用，不提供远程调用入口。P2-3（MCP Server）已实施为**仅本地 stdio、只读**形态，禁止公开 SaaS 的边界不变。
 2. 能力分三档：A 档（宿主能读文件+执行命令，完整能力）、B 档（本地召回规则后注入模型 API）、C 档（网页聊天 / 手机 App，只能降级到方法论提示词）。**网页聊天与手机只能降级到 C 档**，不得伪装成能读取规则库。
 3. 调用前必须完成 README「零、使用前提与能力边界」的 12 项自检清单。
 4. **允许**：自用、内网团队复用（如需服务化仅绑定 127.0.0.1 环回）、GitHub 开源与 Release。**禁止**：公开 SaaS 产品化、对外经营性 API、面向不特定公众的付费服务、把规则库当商业合规数据服务售卖。

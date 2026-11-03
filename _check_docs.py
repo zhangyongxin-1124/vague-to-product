@@ -63,7 +63,7 @@ SKILL = read("SKILL.md")
 _name_m = re.search(r"(?m)^name:\s*([^\s]+)", SKILL)
 NAME = _name_m.group(1).strip() if _name_m else ROOT.name
 VERSION = frontmatter_version(SKILL)
-PEER_VERSION = {"vague-to-product": "1.3.0", "fuzzy-reverse-flow": "2.3.0"}.get(NAME, "")
+PEER_VERSION = {"vague-to-product": "1.4.0", "fuzzy-reverse-flow": "2.5.0"}.get(NAME, "")
 PEER_NAME = {"vague-to-product": "fuzzy-reverse-flow", "fuzzy-reverse-flow": "vague-to-product"}.get(NAME, "")
 
 README = read("README.md")
@@ -88,7 +88,13 @@ COMMON = [
     "RFE-DR-101", "RFE-DR-102", "91-180", "180 天",
     "终局交付", "最终产品", "合规流程报告", "references/final-delivery.md",
     "assets/templates/合规流程报告.md",
-    "张勇鑫", "P2-3", "本期不实施",
+    "张勇鑫", "P2-3", "已实施为仅本地形态",
+    "交付自查清单", "assets/templates/交付自查清单.md", "你要怎么自己验证",
+    "快速模式", "快速模式产物",
+    "mcp_server.py", "v2p_route", "v2p_gate_list", "v2p_issue_codes", "v2p_disclaimer", "v2p_selfcheck",
+    "本地 stdio", "无网络监听",
+    "docs/quick-start.md", "docs/FAQ.md", "README_EN.md", "examples/", "案例库",
+    "铁律 21",
 ]
 
 
@@ -142,6 +148,26 @@ def main() -> int:
               bool(read("references/final-delivery.md")) and "八形态最低完成定义" in read("references/final-delivery.md"))
         check("合规流程报告模板存在且含倒排周计划",
               bool(read("assets/templates/合规流程报告.md")) and "倒排周计划" in read("assets/templates/合规流程报告.md"))
+        mcp = read("scripts/mcp_server.py")
+        check("mcp_server.py 存在且为 stdio 只读实现",
+              "stdio" in mcp and "tools/call" in mcp and "notifications/initialized" in mcp)
+        check("mcp_server.py 无网络监听（不 import socket/http）",
+              ("import socket" not in mcp) and ("import http" not in mcp) and ("urllib" not in mcp))
+        check("mcp_server.py 暴露 5 个只读工具",
+              all(f'"{t}"' in mcp for t in ("v2p_route", "v2p_gate_list", "v2p_issue_codes", "v2p_disclaimer", "v2p_selfcheck")))
+        check("SKILL.md 含铁律 21 与快速模式",
+              "21. **交付必附自查清单" in SKILL and "5.1 快速模式" in SKILL and "阶段产出 D" in SKILL)
+        card = read("assets/templates/交付自查清单.md")
+        check("交付自查清单模板含具体动作+预期结果结构",
+              "具体动作" in card and "预期结果" in card and "按形态追加" in card)
+        for d in ("docs/quick-start.md", "docs/FAQ.md", "docs/安装演示脚本-3分钟.md"):
+            check(f"{d} 存在且非空", len(read(d)) > 200)
+        check("README_EN.md 存在且含 MIT 与边界声明",
+              "MIT" in read("README_EN.md") and "not legal advice" in read("README_EN.md").lower())
+        ex_readme = read("examples/README.md")
+        n_cases = sum(1 for i in ("01", "02", "03", "04", "05") if f"{i}-" in ex_readme)
+        check("examples/ 索引列出 5 个案例", n_cases == 5, f"实际 {n_cases}")
+        check("案例库含真实/演示双标注", "【真实】" in ex_readme and "演示性" in ex_readme)
 
     print("\n[3] 两份文档：功能清单 / 环境变量 / 路径 / 行为描述")
     expect(README, COMMON, "README")
@@ -170,7 +196,7 @@ def main() -> int:
     for d, tag in ((README, "README"), (TXT, "使用说明.txt")):
         check(f"{tag} 明确禁止公开 SaaS 产品化", "公开 SaaS 产品化" in d and "禁止" in d)
         check(f"{tag} 明确仅内网环回 127.0.0.1", "127.0.0.1" in d)
-        check(f"{tag} 声明 P2-3 本期不实施", "P2-3" in d and "本期不实施" in d)
+        check(f"{tag} 声明 P2-3 已实施为仅本地形态", "P2-3 已实施为仅本地形态" in d)
         check(f"{tag} 声明规则非法律意见", "非法律意见" in d or "不构成法律" in d)
 
     if args.zip_path:
