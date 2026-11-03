@@ -512,6 +512,22 @@ def main() -> int:
                             errors="replace")
         check("rfe stats 含复核时间戳", "复核时间戳" in rr.stdout, rr.stdout[:200])
 
+    print("[32] 终局交付（v2.4.0 铁律 19/20 与产出物）")
+    skill_txt = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+    check("SKILL.md 含铁律 19（终点是产品不是文档）",
+          "19. **终局交付" in skill_txt and "终点是产品，不是文档" in skill_txt)
+    check("SKILL.md 含铁律 20（合规流程报告收口）",
+          "20. **交付必附合规流程报告" in skill_txt and "先产品、后合规收口" in skill_txt)
+    check("SKILL.md 总流程含⑤终局收口与第三入口",
+          "⑤ 终局收口" in skill_txt and "直接进 7.4 终局交付" in skill_txt)
+    fd = ROOT / "references" / "final-delivery.md"
+    check("references/final-delivery.md 存在",
+          fd.is_file() and "八形态最低完成定义" in fd.read_text(encoding="utf-8"))
+    tpl = ROOT / "assets" / "templates" / "合规流程报告.md"
+    check("合规流程报告模板存在且五件套齐",
+          tpl.is_file() and all(k in tpl.read_text(encoding="utf-8")
+                                for k in ("结论档位", "已触发红线清单", "办证", "倒排周计划", "免责声明")))
+
     print(f"\n结果：通过 {len(PASS)} 项，失败 {len(FAIL)} 项")
     if FAIL:
         print("失败项：" + "、".join(FAIL))

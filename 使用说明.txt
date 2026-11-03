@@ -1,6 +1,6 @@
 ================================================================================
 vague-to-product（模糊需求挖掘与产出生成器） 使用说明
-版本：v2.3.0    对应 fuzzy-reverse-flow v1.3.0
+版本：v2.4.0    对应 fuzzy-reverse-flow v1.3.0
 许可证：MIT License    Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
 本文件与 README.md 同为发版必检文档，内容必须与代码完全一致。
 ================================================================================
@@ -57,7 +57,7 @@ MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的�
   安装位置      WorkBuddy: ~/.workbuddy/skills/<技能名>/
                 Codex CLI: ~/.codex/skills/<技能名>/
 
-【3. 命令清单（v2.3.0，全部零依赖纯标准库）】
+【3. 命令清单（v2.4.0，全部零依赖纯标准库）】
   统一入口（编排层，单向调用 rfe，用户无需感知）
     v2p plan -t "你的想法"              一份报告 = 需求挖掘 + 合规红线 +
                                         资源底线 + 倒排里程碑 + 完整免责
@@ -75,12 +75,23 @@ MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的�
     v2p settle done --skip <理由>       确无可沉淀时的显式豁免
     v2p change -t "改了什么"            需求变更自动重跑合规与工期推演
     v2p bundle --items app,doc,sheet    五类一致性对账清单
+
+  终局交付（v2.4.0 铁律 19/20：先产品、后合规）
+    流程终点 = 阶段产出 B「最终产品」+ 阶段产出 C「合规流程报告」，
+    绝不停在 PRD / 定型卡（阶段产出 A 只是里程碑，不是终点）。
+    合规档位只改变标注、不改变交付：绿灯直接交；黄灯照交 + 红线写成
+    「上架 / 经营前必须办理清单」；红牌（硬违法路线）交「合法改造路线」
+    版本并明确告知边界。唯一例外：用户明确说"本轮只要方案 / 先不落地"。
+    最终产品最低完成定义（八形态）见 references/final-delivery.md；
+    合规流程报告骨架见 assets/templates/合规流程报告.md，五件套 =
+    结论档位 + 已触发红线（RFE-RL/PT 编码）+ 办证清单（带提前期）+
+    倒排周计划（从今天到可上架）+ 免责 7 条与知识库复核时间戳。
   可视化
     v2p viz depth                       五信号雷达 SVG
     v2p viz gates -f app                闸门分布条形 SVG
     v2p viz heatmap -t "原话"           五信号 × D0-D4 关注热力图 SVG（v2.3.0 新增）
   自测与打包
-    python scripts/selftest.py          端到端自测（v2.3.0：118 项）
+    python scripts/selftest.py          端到端自测（v2.4.0：123 项）
     python scripts/package.py           可复现打包到 dist/（固定时间戳）
     python scripts/provenance_check.py  原创性溯源扫描
 
@@ -145,7 +156,7 @@ MCP Server 或云端 API，不存在可供远程调用的地址。MIT 解决的�
   8.4 每份 v2p plan 报告强制附带知识库复核时间戳与第 6 节完整免责声明。
 
 【9. 安装与 Release 部署（降低部署成本）】
-  9.1 从 GitHub Release 下载 vague-to-product-v2.3.0.zip，核对页面 SHA256。
+  9.1 从 GitHub Release 下载 vague-to-product-v2.4.0.zip，核对页面 SHA256。
   9.2 解压到 ~/.workbuddy/skills/vague-to-product/（WorkBuddy）
       或 ~/.codex/skills/vague-to-product/（Codex CLI）。
   9.3 同级放置 fuzzy-reverse-flow/（v2p plan 需要它做合规排雷；

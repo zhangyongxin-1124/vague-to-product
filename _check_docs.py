@@ -86,6 +86,8 @@ COMMON = [
     "schema_version=2", "GitHub Release", "SHA256", "_check_docs.py --zip",
     "V2P-QG", "V2P-OR", "RFE-RL", "RFE-PT", "RFE-DR", "references/issue-codes.md",
     "RFE-DR-101", "RFE-DR-102", "91-180", "180 天",
+    "终局交付", "最终产品", "合规流程报告", "references/final-delivery.md",
+    "assets/templates/合规流程报告.md",
     "张勇鑫", "P2-3", "本期不实施",
 ]
 
@@ -132,6 +134,14 @@ def main() -> int:
         check("orchestrate.py 报告带去重编码索引", "问题编码索引（去重）" in orch)
         check("orchestrate.py 报告带完整免责章节", "完整免责声明与使用边界" in orch)
         check("v2p.py viz choices 含 heatmap", '"heatmap"' in v2p)
+        check("SKILL.md 含终局交付铁律 19/20",
+              "19. **终局交付" in SKILL and "20. **交付必附合规流程报告" in SKILL)
+        check("SKILL.md 含阶段产出 B/C 终局约定",
+              "阶段产出 B" in SKILL and "阶段产出 C" in SKILL and "不是流程终点" in SKILL)
+        check("references/final-delivery.md 存在且含八形态完成定义",
+              bool(read("references/final-delivery.md")) and "八形态最低完成定义" in read("references/final-delivery.md"))
+        check("合规流程报告模板存在且含倒排周计划",
+              bool(read("assets/templates/合规流程报告.md")) and "倒排周计划" in read("assets/templates/合规流程报告.md"))
 
     print("\n[3] 两份文档：功能清单 / 环境变量 / 路径 / 行为描述")
     expect(README, COMMON, "README")

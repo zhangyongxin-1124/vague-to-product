@@ -7,7 +7,7 @@
 
 ## 零、使用前提与能力边界（必读）
 
-> 本项目是「本地文件 + Python CLI + 落盘知识库」，仓库内**没有任何 HTTP 服务、MCP Server 或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.3.0**，配套 fuzzy-reverse-flow **v1.3.0**。
+> 本项目是「本地文件 + Python CLI + 落盘知识库」，仓库内**没有任何 HTTP 服务、MCP Server 或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.4.0**，配套 fuzzy-reverse-flow **v1.3.0**。
 
 ### 0.1 三档能力边界（A / B / C）
 
@@ -58,6 +58,7 @@
 ### 0.5 章节指引
 
 - 知识库分层与版本迁移 → 附录 A；统一问题编码 → 附录 B；季度复核 → 附录 C；Release 部署与发版校验 → 附录 D。
+- 终局交付（先产出最终产品，再合规流程报告收口）→ [`references/final-delivery.md`](references/final-delivery.md) 与 [`assets/templates/合规流程报告.md`](assets/templates/合规流程报告.md)。
 - 环境变量与路径、完整命令清单 → [`使用说明.txt`](使用说明.txt) 第 2、3 节。
 
 ---
@@ -131,6 +132,23 @@ v2p plan -t "我要做一个招聘小程序"
 其他：`v2p use 项目名`（口味档案按项目隔离）、`v2p gate manual`（手测清单+截图留痕校验）、`v2p bundle --items app,doc,sheet`（多产物一致性对账）、`v2p viz depth / gates / heatmap`（雷达图 / 闸门分布 / 五信号热力图，v2.3.0 新增 heatmap）。
 
 > 完整免责声明见 0.3 节 7 条（报告尾部强制附带）；此处不再使用简版免责。
+
+## 终局交付：先产出最终产品，再合规收口（v2.4.0 新增）
+
+**真实失败案例**：用户说"我想做一个闹钟 app"，D3 挖了 3 轮、交付一页纸 PRD 后流程即停——用户拿到的是需求文档，不是闹钟 app。
+
+v2.4.0 用两条铁律堵死这个口子（SKILL.md 铁律 19/20）：
+
+1. **挖掘的终点是产品，不是文档**。回读确认通过后必须按用户目标产出**最终产品**（软件=可构建/可运行的完整工程，文档=成稿，表格=成品表……八形态各有最低完成定义）。**不论合规结论是绿、黄还是红牌都要交**：绿灯直接交；黄灯照交、红线写成"上架/经营前必须办理清单"；红牌交付"合法改造路线"版本。唯一例外：用户明确说"本轮只要方案"。
+2. **交付必附合规流程报告（阶段产出 C）**。用 fuzzy-reverse-flow 收口：结论档位 + 已触发红线（RFE-RL 编码）+ 办什么证 + **倒排周计划**——让用户拿到产品的同时，明确"后续怎么走、怎么安排"。
+
+```
+阶段产出 A = PRD / 定型卡（里程碑，不是终点）
+阶段产出 B = 最终产品（必交，不论可否上架）
+阶段产出 C = 合规流程报告（必附，倒排周计划）
+```
+
+> 规范：[`references/final-delivery.md`](references/final-delivery.md) ｜ 报告骨架：[`assets/templates/合规流程报告.md`](assets/templates/合规流程报告.md)
 
 ## 用起来
 
@@ -261,10 +279,10 @@ $ v2p gate scan -p ./我的项目
 ## 自测
 
 ```bash
-python scripts/selftest.py     # 72 项端到端断言，全程在临时目录
+python scripts/selftest.py     # 端到端断言，全程在临时目录
 ```
 
-覆盖：9 种输入的形态判定、深度随信号升降、形态不同则题目不同、已覆盖维度不重复问、轮次越界警告、两套 spec 校验、闸门按形态与深度裁剪、扫描能抓能放、核查卡结构完整。
+覆盖：9 种输入的形态判定、深度随信号升降、形态不同则题目不同、已覆盖维度不重复问、轮次越界警告、两套 spec 校验、闸门按形态与深度裁剪、扫描能抓能放、核查卡结构完整、终局交付两件套（铁律 19/20 + 规范 + 模板）。
 
 ---
 
@@ -284,6 +302,7 @@ vague-to-product/
 │   ├── stage3-spec.md                # 软件 PRD 四表 + 非软件定型卡
 │   ├── stage4-build.md               # 八形态路由、九种起手模板
 │   ├── quality-gates.md              # 六道闸门、状态矩阵、破坏性测试、裁剪与局限
+│   ├── final-delivery.md             # 终局交付规范：八形态完成定义、合规三档、报告五件套
 │   ├── question-bank.md              # 题库（形态 × 维度，56 题）
 │   └── anti-patterns.md              # 23 种失败对话
 ├── scripts/
@@ -294,6 +313,7 @@ vague-to-product/
     ├── 一页纸PRD.md                  # 软件形态
     ├── 产出定型卡.md                  # 非软件七类通用
     ├── 交付质量核查卡.md               # 状态矩阵 + 六道闸门填空卡
+    ├── 合规流程报告.md                 # 阶段产出 C 骨架（终局交付收口）
     ├── MVP功能分级表.md
     └── taste-profile.json
 ```
@@ -367,7 +387,7 @@ MIT © 2026 张勇鑫 (Zhang Yongxin)
 
 ## 附录 D · GitHub Release 部署与发版校验
 
-1. 从 GitHub Release 下载 `vague-to-product-v2.3.0.zip`，核对页面给出的 **SHA256**。
+1. 从 GitHub Release 下载 `vague-to-product-v2.4.0.zip`，核对页面给出的 **SHA256**。
 2. 解压到 `~/.workbuddy/skills/<技能名>/`（WorkBuddy）或 `~/.codex/skills/<技能名>/`（Codex CLI）；fuzzy-reverse-flow-v1.3.0.zip 需同级放置（或用 `RFE_SCRIPT` 指定）。
 3. 执行 `python scripts/selftest.py`，应输出「全部通过」；再跑 `rfe init` → `rfe migrate --check`，完成 0.2 节 12 项自检。
 4. 维护者发版固定顺序：**改代码 → 更新 README.md 与 使用说明.txt → `python _check_docs.py` → 组装发布包 → `python _check_docs.py --zip dist/<包名>.zip` → 提交推送 → 上传 / 替换 Release 附件**。两轮校验全部 PASS 才允许发版。
