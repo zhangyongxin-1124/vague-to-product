@@ -35,8 +35,8 @@ from datetime import date
 from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
-TPL_PRD = SKILL_ROOT / "assets" / "templates" / "一页纸PRD.md"
-TPL_BRIEF = SKILL_ROOT / "assets" / "templates" / "产出定型卡.md"
+TPL_PRD = SKILL_ROOT / "templates" / "一页纸PRD.md"
+TPL_BRIEF = SKILL_ROOT / "templates" / "产出定型卡.md"
 
 
 def _home() -> Path:

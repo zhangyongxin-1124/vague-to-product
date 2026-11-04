@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import subprocess
 import sys
 import zipfile
@@ -24,16 +25,25 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parent
 SKILL_ROOT = SCRIPTS.parent
 
-EXCLUDE_DIRS = {"__pycache__", ".git", "dist", "node_modules", ".vscode", ".idea",
+EXCLUDE_DIRS = {"__pycache__", ".git", ".github", "dist", "node_modules", ".vscode", ".idea",
                 "kb_local"}
-EXCLUDE_GLOBS = (".kb", ".kb*", "*.pyc", "*.pyo", "*.tmp", ".DS_Store", "Thumbs.db")
+EXCLUDE_GLOBS = (".kb", ".kb*", "*.pyc", "*.pyo", "*.tmp", ".DS_Store", "Thumbs.db",
+                 "*.bak", "*.bak-*")
+
+# WorkBuddy 开放平台（技能市场上架）要求的 SKILL.md frontmatter 必填字段
+MARKET_REQUIRED = ["name", "display_name", "display_name_en", "description",
+                   "description_zh", "description_en", "version", "author"]
+
+# 技能根目录允许出现的散文件（其余散落产物一律不打包）
+ROOT_ALLOW = {"SKILL.md", "README.md", "README_EN.md", "使用说明.txt",
+              "LICENSE", "CHANGELOG.md", "PROVENANCE.md", "_check_docs.py"}
 
 REQUIRED = ["SKILL.md", "README.md", "README_EN.md", "使用说明.txt", "LICENSE", "CHANGELOG.md",
             "PROVENANCE.md", "_check_docs.py", "references/issue-codes.md",
             "scripts/v2p.py", "scripts/qgate.py", "scripts/orchestrate.py",
             "scripts/bridge.py", "scripts/selftest.py", "scripts/mcp_server.py",
             "docs/quick-start.md", "docs/FAQ.md", "docs/安装演示脚本-3分钟.md",
-            "assets/templates/交付自查清单.md", "examples/README.md",
+            "templates/交付自查清单.md", "examples/README.md",
             "examples/01-闹钟App-从一句话到PRD与终局交付.md",
             "examples/02-娱乐小程序-逆向施工图摘要.md",
             "examples/03-实体店-社区奶茶店可行性推演.md",
@@ -81,6 +91,70 @@ def structure_check() -> int:
     return bad
 
 
+def market_check() -> int:
+    """上架 WorkBuddy 技能市场所需的 frontmatter 字段检查。"""
+    text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    meta = parse_frontmatter(text)
+    bad = 0
+    for f in MARKET_REQUIRED:
+        if not meta.get(f):
+            log(f"  [市场必填缺失] {f}")
+            bad += 1
+    desc = meta.get("description", "")
+    if desc and len(desc) > 1200:
+        log(f"  [警告] description 长度 {len(desc)}，市场展示可能被截断")
+    # 平台用严格 YAML 解析：值内含 ': ' 的裸标量会解析失败，须加引号。
+    # yaml 为可选增强（缺失则降级跳过），动态导入以保持"零依赖"承诺。
+    try:
+        yaml = __import__("yaml")
+        m = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.S)
+        if not m:
+            log("  [YAML] frontmatter 缺失")
+            bad += 1
+        else:
+            try:
+                data = yaml.safe_load(m.group(1))
+                if not isinstance(data, dict):
+                    log("  [YAML] frontmatter 未解析为键值映射")
+                    bad += 1
+            except yaml.YAMLError as e:
+                log(f"  [YAML] 严格解析失败: {str(e)[:160]}")
+                bad += 1
+    except ImportError:
+        log("  [提示] 未安装 PyYAML，跳过严格 YAML 校验（pip install pyyaml 后更稳）")
+    log(f"市场字段检查：{'通过' if not bad else f'{bad} 项问题'}")
+    return bad
+
+
+def verify_zip(zip_path: Path, name: str) -> int:
+    """回读校验：顶层目录唯一 + 中文文件名按 UTF-8 存储。"""
+    bad = 0
+    with zipfile.ZipFile(zip_path) as z:
+        infos = z.infolist()
+        names = [i.filename for i in infos]
+        tops = {n.split("/")[0] for n in names}
+        if tops != {name}:
+            log(f"  [顶层目录异常] 期望 {name}，实际 {tops}")
+            bad += 1
+        if f"{name}/SKILL.md" not in names:
+            log("  [缺少] SKILL.md 不在包根目录")
+            bad += 1
+        for i in infos:
+            has_zh = any(ord(c) > 127 for c in i.filename)
+            if not has_zh:
+                continue
+            if not (i.flag_bits & 0x800):
+                log(f"  [编码] 中文名缺少 UTF-8 标志位：{i.filename}")
+                bad += 1
+            elif all(ord(c) < 256 for c in i.filename):
+                log(f"  [编码] 疑似乱码：{i.filename}")
+                bad += 1
+        zh = sum(1 for n in names if any("\u4e00" <= c <= "\u9fff" for c in n))
+        log(f"回读校验：{len(infos)} 条目，其中含中文名的 {zh} 个"
+            f" — {'通过' if not bad else f'{bad} 项问题'}")
+    return bad
+
+
 def iter_files():
     for p in sorted(SKILL_ROOT.rglob("*")):
         if not p.is_file():
@@ -89,6 +163,11 @@ def iter_files():
         if any(part in EXCLUDE_DIRS for part in rel.parts):
             continue
         if any(p.match(g) for g in EXCLUDE_GLOBS):
+            continue
+        # 根目录只允许白名单内的散文件：v2p spec new 等命令默认写到 cwd，
+        # 若在技能根目录被触发会留下 -PRD.md / -定型卡.md，不能进发布包。
+        if len(rel.parts) == 1 and rel.name not in ROOT_ALLOW:
+            log(f"  [跳过根目录散文件] {rel.name}")
             continue
         yield p, rel
 
@@ -139,10 +218,17 @@ def main() -> int:
         log("— 结构检查 —")
         if structure_check():
             return 1
+        log("— 市场字段检查 —")
+        if market_check():
+            return 1
 
     out = pack(SKILL_ROOT / "dist", name, version)
     log(f"已生成：{out}")
     log(f"SHA256：{sha256(out)}")
+    log("— 回读校验 —")
+    if verify_zip(out, name):
+        log("回读校验未通过：包内编码或目录结构有问题，请勿上传。")
+        return 1
     log("可复现构建：再次打包 SHA256 应一致；分发前建议解压实测 + 跑 selftest。")
     return 0
 

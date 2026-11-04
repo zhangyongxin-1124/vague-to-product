@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 SERVER_NAME = "vague-to-product"
-SERVER_VERSION = "2.5.0"
+SERVER_VERSION = "2.5.1"
 PROTOCOL_VERSION = "2024-11-05"
 MAX_OUT = 8000
 TIMEOUT = 30

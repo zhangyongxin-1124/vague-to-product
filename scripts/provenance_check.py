@@ -23,6 +23,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+
+def _skill_name() -> str:
+    """从 SKILL.md 读取技能名，避免移植后标题与实际技能不符。"""
+    try:
+        text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        m = re.search(r"^name:\s*(\S+)", text, re.M)
+        if m:
+            return m.group(1)
+    except OSError:
+        pass
+    return ROOT.name
+
 # 允许出现的标准库模块（新增依赖必须显式加进白名单，加不动就说明不该加）
 STDLIB_OK = {
     "__future__", "argparse", "base64", "collections", "configparser", "csv",
@@ -184,7 +196,7 @@ def main() -> int:
         return 0 if ok else 1
 
     print("=" * 64)
-    print("原创性自查报告 · fuzzy-reverse-flow")
+    print(f"原创性自查报告 · {_skill_name()}")
     print("=" * 64)
     if notes:
         print("\n[已通过]")

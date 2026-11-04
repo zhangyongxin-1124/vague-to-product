@@ -1,0 +1,295 @@
+{
+  "pitfalls": [
+    {
+      "trap": "合并模式的圆圈颜色写死，没有跟随分类皮肤色",
+      "domain": "软件与小程序",
+      "severity": "warn",
+      "symptom": "分类皮肤换成新色后，合并模式的圆圈还是旧色，界面像两个产品拼的",
+      "guard": "凡是从分类/主题取色的 UI 元素，颜色一律走同一数据源（皮肤变量），禁止在样式里写死色值；改皮肤后全页搜一遍色值",
+      "fallback": "临时用分类主色兜底，下一版统一改成皮肤变量驱动",
+      "trigger": [
+        "皮肤",
+        "颜色",
+        "圆圈",
+        "主题色",
+        "合并"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "灵感模块保存的内容，错误地显示在生活分类下",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "在灵感模块写完保存，回到首页内容却挂在生活分类里",
+      "guard": "跨 TabBar 页面传参不要依赖全局单值（globalData 的 pendingCategory 会被后续操作覆盖或残留）；保存时把分类 ID 随数据一起落库，读取时以数据自带的分类为准",
+      "fallback": "在保存入口立即校验分类归属，错挂的提供一键移动",
+      "trigger": [
+        "分类",
+        "保存",
+        "显示错误",
+        "灵感",
+        "挂错"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "TabBar 页面之间传参用 URL query 不生效",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "switchTab 跳转后目标页拿不到参数，编辑内容丢失",
+      "guard": "TabBar 页跳转只能 switchTab 且不带参；跨页传参用 globalData（pendingEditId/pendingCategory 模式），目标页 onShow 里读取并立即消费清空，防止残留",
+      "fallback": "读取不到参数时回退到列表页让用户重选，禁止白屏",
+      "trigger": [
+        "tabbar",
+        "传参",
+        "switchtab",
+        "globaldata",
+        "编辑跳转"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "长按笔记进入编辑与单击查看事件冲突",
+      "domain": "软件与小程序",
+      "severity": "warn",
+      "symptom": "长按触发了编辑跳转，但同时触发了单击查看，出现两次跳转",
+      "guard": "长按（longpress）与点击（tap）互斥处理：longpress 触发后置标志位，tap 处理器检查标志位直接返回",
+      "fallback": "出现双跳转时以编辑页为准，返回后定位到原条目",
+      "trigger": [
+        "长按",
+        "编辑",
+        "事件冲突",
+        "笔记"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "首页模块点击后，输入框没有显示当前模块名称",
+      "domain": "软件与小程序",
+      "severity": "warn",
+      "symptom": "用户点进灵感模块，输入框还是空白占位，不知道自己在往哪个模块写",
+      "guard": "进入模块时把模块名写入输入框 placeholder 或顶部标签，让「当前在哪个模块」随时可见",
+      "fallback": "占位文案至少写「正在记录到：XX 模块」",
+      "trigger": [
+        "输入框",
+        "模块名",
+        "占位",
+        "首页"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "WXSS 一处编译错误导致整个页面样式不加载",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "一个非法字符/未闭合括号，整页白样式，控制台才看到编译报错",
+      "guard": "改动 WXSS 后必须本地编译预览一遍再交付；大改前先 git 提交，出问题能回滚",
+      "fallback": "注释掉最近改动的样式段二分定位",
+      "trigger": [
+        "wxss",
+        "编译错误",
+        "样式",
+        "白屏"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "微信小程序 editor 富文本组件初始化时机不对，设置内容丢失",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "onReady 里立刻 setContent 不生效，编辑器是空的",
+      "guard": "editor 必须等 bindready 回调后再操作；setContent 前检查 editorContext 是否已就绪",
+      "fallback": "ready 未触发前把内容暂存，ready 后补写",
+      "trigger": [
+        "editor",
+        "富文本",
+        "setcontent",
+        "ready"
+      ],
+      "source": "real-project",
+      "project": "某笔记小程序"
+    },
+    {
+      "trap": "AppID 配置错误导致真机预览一直失败",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "模拟器正常，真机预览二维码扫出来提示项目不存在",
+      "guard": "项目初始化第一步核对 project.config.json 的 appid 与后台一致（与小程序后台一致，形如 wx1234567890abcdef）；换设备预览失败先查 AppID 再查网络",
+      "fallback": "用测试号先跑通流程，再切正式 AppID",
+      "trigger": [
+        "appid",
+        "真机",
+        "预览",
+        "二维码"
+      ],
+      "source": "real-project",
+      "project": "某招聘小程序"
+    },
+    {
+      "trap": "纯前端 mock 数据直接写进页面逻辑，后期接后端全量返工",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "MVP 用 mock 快速上线后，切真实接口时每个页面都要改数据来源",
+      "guard": "mock 也要走统一 API 层（api/ 目录封装），页面只调 api.xxx；切换后端只改 API 层实现",
+      "fallback": "返工前先用适配器模式把 mock 函数换成同签名请求函数",
+      "trigger": [
+        "mock",
+        "api",
+        "后端",
+        "数据层"
+      ],
+      "source": "real-project",
+      "project": "某招聘小程序"
+    },
+    {
+      "trap": "适老化大字号模式下布局溢出",
+      "domain": "软件与小程序",
+      "severity": "warn",
+      "symptom": "字号放大 1.5 倍后按钮文字被截断、卡片高度撑破",
+      "guard": "适老化模式下所有容器用 min-height 不用固定 height；文字区域预留换行空间；大字号用整套设计变量而不是局部乘系数",
+      "fallback": "对溢出严重的页面单独出适老版式",
+      "trigger": [
+        "适老化",
+        "大字号",
+        "溢出",
+        "布局"
+      ],
+      "source": "real-project",
+      "project": "某中老年招聘小程序"
+    },
+    {
+      "trap": "录音/摄像头权限被用户拒绝后页面无提示卡死",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "用户拒绝授权后，语音输入按钮点了没反应，也没有引导去开权限",
+      "guard": "调用授权 API 前检查 scope 状态；被拒绝后给出解释页 + 跳设置页（openSetting）的按钮",
+      "fallback": "降级为文字输入，保住主流程",
+      "trigger": [
+        "权限",
+        "录音",
+        "授权",
+        "语音"
+      ],
+      "source": "real-project",
+      "project": "某招聘小程序"
+    },
+    {
+      "trap": "AI 推荐接口失败时推荐区白屏",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "AI 岗位推荐接口超时，页面推荐区域一片空白",
+      "guard": "AI 能力一律准备降级方案：接口失败回退到规则推荐或热门榜单，并明确告知「智能推荐暂不可用」",
+      "fallback": "展示热门岗位列表，保留入口稍后重试",
+      "trigger": [
+        "ai",
+        "推荐",
+        "降级",
+        "超时"
+      ],
+      "source": "real-project",
+      "project": "某招聘小程序"
+    },
+    {
+      "trap": "职位发布按钮可连点，产生重复职位",
+      "domain": "软件与小程序",
+      "severity": "blocker",
+      "symptom": "企业用户网络慢时连点发布，同一职位出现多条",
+      "guard": "点击即禁用 + 前端防抖 + 服务端按内容指纹幂等去重，三样至少做前两样",
+      "fallback": "提供重复职位的一键合并/删除工具",
+      "trigger": [
+        "重复提交",
+        "发布",
+        "职位",
+        "幂等"
+      ],
+      "source": "real-project",
+      "project": "某招聘小程序"
+    },
+    {
+      "trap": "招聘类小程序提审才发现缺人力资源服务许可，上架延期一个月",
+      "domain": "招聘与人力",
+      "severity": "blocker",
+      "symptom": "功能全部做完，微信审核要求提供《人力资源服务许可证》，办证要 2-4 周，上线计划直接作废",
+      "guard": "涉及招聘/用工撮合的小程序，办证与开发并行启动；提审前自查类目资质要求（rfe recall --query 招聘）",
+      "fallback": "先以「信息展示」类目上线（去掉撮合交易），证下来再切完整功能",
+      "trigger": [
+        "招聘",
+        "人力资源服务许可",
+        "提审",
+        "类目"
+      ],
+      "source": "real-project",
+      "project": "某招聘小程序"
+    },
+    {
+      "trap": "生成 Word 文档中文字体失效，Word 里显示为默认字体",
+      "domain": "通用",
+      "severity": "warn",
+      "symptom": "python-docx 设置了字体名，打开 Word 中文仍是默认宋体/等线混乱",
+      "guard": "中文字体必须写 eastAsia 属性（w:eastAsia），HTML 转 docx 场景 font-family 第一项必须是 SimSun/宋体，不能用系统别名",
+      "fallback": "交付前用 Word 打开抽查一页字体",
+      "trigger": [
+        "word",
+        "字体",
+        "docx",
+        "中文"
+      ],
+      "source": "real-project",
+      "project": "通用"
+    },
+    {
+      "trap": "Git Bash 解压含中文文件名的 zip 全部乱码",
+      "domain": "通用",
+      "severity": "warn",
+      "symptom": "unzip 解包后中文文件名变成乱码，脚本按名字找不到文件",
+      "guard": "Windows 上解压中文名 zip 用 PowerShell Expand-Archive；打包时用可复现构建（固定 date_time）并保持 UTF-8 标志",
+      "fallback": "按文件大小/顺序匹配还原文件名",
+      "trigger": [
+        "zip",
+        "乱码",
+        "解压",
+        "中文文件名"
+      ],
+      "source": "real-project",
+      "project": "通用"
+    },
+    {
+      "trap": "删除 Windows 目录联接（Junction）时连源目录一起删光",
+      "domain": "通用",
+      "severity": "blocker",
+      "symptom": "shutil.rmtree 删技能安装联接，把 F 盘源目录内容全删了",
+      "guard": "Windows 删联接必须用 [System.IO.Directory]::Delete(path)（不递归）；任何 rmtree 前先判断 IsJunction/ReparsePoint",
+      "fallback": "立即从回收站/备份恢复；没有备份就停手找数据恢复工具",
+      "trigger": [
+        "junction",
+        "联接",
+        "删除",
+        "rmtree"
+      ],
+      "source": "real-project",
+      "project": "通用"
+    },
+    {
+      "trap": ".cmd 批处理里写中文，执行时按 GBK 解码报错",
+      "domain": "通用",
+      "severity": "warn",
+      "symptom": "双击 .cmd 报「不是内部或外部命令」或输出乱码",
+      "guard": ".cmd 文件正文只写 ASCII；需要中文输出时先 chcp 65001 且文件存为无 BOM UTF-8，或干脆把逻辑放进 Python、.cmd 只做转发",
+      "fallback": "用 python 脚本重写入口",
+      "trigger": [
+        "cmd",
+        "批处理",
+        "乱码",
+        "chcp"
+      ],
+      "source": "real-project",
+      "project": "通用"
+    }
+  ]
+}

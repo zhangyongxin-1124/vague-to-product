@@ -7,7 +7,7 @@
 
 ## 零、使用前提与能力边界（必读）
 
-> 本项目是「本地文件 + Python CLI + 落盘知识库」；**内置一个本地 stdio MCP Server（`scripts/mcp_server.py`，只读工具、无网络监听）**，除此之外**没有任何 HTTP 服务或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.5.0**，配套 fuzzy-reverse-flow **v1.4.0**。
+> 本项目是「本地文件 + Python CLI + 落盘知识库」；**内置一个本地 stdio MCP Server（`scripts/mcp_server.py`，只读工具、无网络监听）**，除此之外**没有任何 HTTP 服务或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.5.1**，配套 fuzzy-reverse-flow **v1.4.0**。
 
 ### 0.1 三档能力边界（A / B / C）
 
@@ -58,7 +58,7 @@
 ### 0.5 章节指引
 
 - 知识库分层与版本迁移 → 附录 A；统一问题编码 → 附录 B；季度复核 → 附录 C；Release 部署与发版校验 → 附录 D。
-- 终局交付（先产出最终产品，再合规流程报告收口）→ [`references/final-delivery.md`](references/final-delivery.md) 与 [`assets/templates/合规流程报告.md`](assets/templates/合规流程报告.md)。
+- 终局交付（先产出最终产品，再合规流程报告收口）→ [`references/final-delivery.md`](references/final-delivery.md) 与 [`templates/合规流程报告.md`](templates/合规流程报告.md)。
 - 环境变量与路径、完整命令清单 → [`使用说明.txt`](使用说明.txt) 第 2、3 节。
 
 ---
@@ -148,14 +148,23 @@ v2.4.0 用两条铁律堵死这个口子（SKILL.md 铁律 19/20）：
 阶段产出 C = 合规流程报告（必附，倒排周计划）
 ```
 
-> 规范：[`references/final-delivery.md`](references/final-delivery.md) ｜ 报告骨架：[`assets/templates/合规流程报告.md`](assets/templates/合规流程报告.md)
+> 规范：[`references/final-delivery.md`](references/final-delivery.md) ｜ 报告骨架：[`templates/合规流程报告.md`](templates/合规流程报告.md)
+
+## v2.5.1 修复：实物优先与目标形态核对（铁律 19 收紧）
+
+真实失败案例：用户明确要"跑步运动 app"，流程建完了工程，但最终产物清单里只有 PRD / 合规流程报告 / 自查清单等 .md 文档，产品本体没作为交付物出现。v2.5.1 堵死这个口子：
+
+1. **铁律 19 收紧（实物优先）**：最终产品必须以「本体实物/入口」存在并作为**第一交付物**呈现——用户要 app，交付清单第一项就必须是可安装包（APK 等）或可直接打开运行的应用入口；.md 文档只能是附属件。
+2. **7.4.1 目标形态核对（交付前强制执行）**：回看用户目标原话的形态名词 → 核对产物清单存在对应本体实物 → 本体排第一、附属文档排其后。**产物清单里只有 .md 文档 = 未完成，禁止收口**。
+3. **交付自检第 5 条**：形态核对不过，不许说"完成"。
+4. `references/final-delivery.md` 新增 2.3 节八形态「本体实物」对照表；`orchestrate.py` 报告尾部新增第 6 条形态核对提示；`selftest.py` 新增 [34] 断言组。
 
 ## v2.5.0 新增：三件套、案例库、快速模式、自查清单、MCP 与反馈渠道
 
 1. **小白上手三件套**：[`docs/quick-start.md`](docs/quick-start.md)（三步装好卡）+ [`docs/FAQ.md`](docs/FAQ.md)（12 问速答）+ [`docs/安装演示脚本-3分钟.md`](docs/安装演示脚本-3分钟.md)（安装视频分镜脚本，照着录即成片）。
 2. **案例库**：[`examples/`](examples/README.md) 收录 5 个案例——真实（闹钟 App / 娱乐小程序摘要）+ 明确标注的演示案例（奶茶店 / 商业计划书 / 进销存台账），每个案例配「输入一句话 → 最终产出」对照与自查要点。
 3. **快速模式**：对 AI 说"少问点，直接做"——追问压缩到最少两轮、其余默认假设兜底，直接产出（标注"快速模式产物"，合规红线照常召回）。见 SKILL.md 5.1。
-4. **交付自查清单（铁律 21 / 阶段产出 D）**：每次交付必附一页「你要怎么自己验证」（[`assets/templates/交付自查清单.md`](assets/templates/交付自查清单.md)）——通用 5 项 + 按形态追加，逐条=具体动作+预期结果。
+4. **交付自查清单（铁律 21 / 阶段产出 D）**：每次交付必附一页「你要怎么自己验证」（[`templates/交付自查清单.md`](templates/交付自查清单.md)）——通用 5 项 + 按形态追加，逐条=具体动作+预期结果。
 5. **本地 MCP Server（P2-3 落地）**：`python scripts/mcp_server.py`，stdio 传输、零依赖、只读工具、无网络监听；边界与禁止公开 SaaS 不变。
 6. **用户反馈渠道**：GitHub Issues 双模板（Bug 反馈 / 用后感），让改进有真实依据。
 
@@ -322,7 +331,7 @@ vague-to-product/
 │   ├── qgate.py                      # 质量闸门（65 项 + 扫描器）
 │   ├── mcp_server.py                 # 本地 stdio MCP Server（只读、无网络监听）
 │   └── selftest.py                   # 端到端自测
-└── assets/templates/
+└── templates/
     ├── 一页纸PRD.md                  # 软件形态
     ├── 产出定型卡.md                  # 非软件七类通用
     ├── 交付质量核查卡.md               # 状态矩阵 + 六道闸门填空卡
@@ -401,7 +410,7 @@ MIT © 2026 张勇鑫 (Zhang Yongxin)
 
 ## 附录 D · GitHub Release 部署与发版校验
 
-1. 从 GitHub Release 下载 `vague-to-product-v2.5.0.zip`，核对页面给出的 **SHA256**。
+1. 从 GitHub Release 下载 `vague-to-product-v2.5.1.zip`，核对页面给出的 **SHA256**。
 2. 解压到 `~/.workbuddy/skills/<技能名>/`（WorkBuddy）或 `~/.codex/skills/<技能名>/`（Codex CLI）；fuzzy-reverse-flow-v1.4.0.zip 需同级放置（或用 `RFE_SCRIPT` 指定）。
 3. 执行 `python scripts/selftest.py`，应输出「全部通过」；再跑 `rfe init` → `rfe migrate --check`，完成 0.2 节 12 项自检。
 4. 维护者发版固定顺序：**改代码 → 更新 README.md 与 使用说明.txt → `python _check_docs.py` → 组装发布包 → `python _check_docs.py --zip dist/<包名>.zip` → 提交推送 → 上传 / 替换 Release 附件**。两轮校验全部 PASS 才允许发版。

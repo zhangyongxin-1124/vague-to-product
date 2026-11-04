@@ -1,6 +1,6 @@
 # vague-to-product (v2p) — Turn a Vague Idea into a Real Deliverable
 
-> **English quick guide (condensed).** The canonical, full documentation is the Chinese [`README.md`](README.md) / [`SKILL.md`](SKILL.md); this file only covers what international users need to get started. Version: v2.5.0 · Companion skill: fuzzy-reverse-flow v1.4.0 · License: MIT © 2026 Zhang Yongxin (张勇鑫)
+> **English quick guide (condensed).** The canonical, full documentation is the Chinese [`README.md`](README.md) / [`SKILL.md`](SKILL.md); this file only covers what international users need to get started. Version: v2.5.1 · Companion skill: fuzzy-reverse-flow v1.4.0 · License: MIT © 2026 Zhang Yongxin (张勇鑫)
 
 ## What it does
 

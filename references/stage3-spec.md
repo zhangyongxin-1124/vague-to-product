@@ -121,7 +121,7 @@
 
 ## 7. 非软件形态：产出定型卡
 
-软件之外的一切，用同一张卡。模板：`assets/templates/产出定型卡.md`
+软件之外的一切，用同一张卡。模板：`templates/产出定型卡.md`
 生成：`v2p spec new --title "XX" --brief`
 校验：`v2p spec check --file XX.md --form doc`
 

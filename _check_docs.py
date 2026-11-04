@@ -87,14 +87,14 @@ COMMON = [
     "V2P-QG", "V2P-OR", "RFE-RL", "RFE-PT", "RFE-DR", "references/issue-codes.md",
     "RFE-DR-101", "RFE-DR-102", "91-180", "180 天",
     "终局交付", "最终产品", "合规流程报告", "references/final-delivery.md",
-    "assets/templates/合规流程报告.md",
+    "templates/合规流程报告.md",
     "张勇鑫", "P2-3", "已实施为仅本地形态",
-    "交付自查清单", "assets/templates/交付自查清单.md", "你要怎么自己验证",
+    "交付自查清单", "templates/交付自查清单.md", "你要怎么自己验证",
     "快速模式", "快速模式产物",
     "mcp_server.py", "v2p_route", "v2p_gate_list", "v2p_issue_codes", "v2p_disclaimer", "v2p_selfcheck",
     "本地 stdio", "无网络监听",
     "docs/quick-start.md", "docs/FAQ.md", "README_EN.md", "examples/", "案例库",
-    "铁律 21",
+    "铁律 21", "实物优先", "目标形态核对",
 ]
 
 
@@ -147,7 +147,7 @@ def main() -> int:
         check("references/final-delivery.md 存在且含八形态完成定义",
               bool(read("references/final-delivery.md")) and "八形态最低完成定义" in read("references/final-delivery.md"))
         check("合规流程报告模板存在且含倒排周计划",
-              bool(read("assets/templates/合规流程报告.md")) and "倒排周计划" in read("assets/templates/合规流程报告.md"))
+              bool(read("templates/合规流程报告.md")) and "倒排周计划" in read("templates/合规流程报告.md"))
         mcp = read("scripts/mcp_server.py")
         check("mcp_server.py 存在且为 stdio 只读实现",
               "stdio" in mcp and "tools/call" in mcp and "notifications/initialized" in mcp)
@@ -157,7 +157,7 @@ def main() -> int:
               all(f'"{t}"' in mcp for t in ("v2p_route", "v2p_gate_list", "v2p_issue_codes", "v2p_disclaimer", "v2p_selfcheck")))
         check("SKILL.md 含铁律 21 与快速模式",
               "21. **交付必附自查清单" in SKILL and "5.1 快速模式" in SKILL and "阶段产出 D" in SKILL)
-        card = read("assets/templates/交付自查清单.md")
+        card = read("templates/交付自查清单.md")
         check("交付自查清单模板含具体动作+预期结果结构",
               "具体动作" in card and "预期结果" in card and "按形态追加" in card)
         for d in ("docs/quick-start.md", "docs/FAQ.md", "docs/安装演示脚本-3分钟.md"):

@@ -1,6 +1,6 @@
 ================================================================================
 vague-to-product（模糊需求挖掘与产出生成器） 使用说明
-版本：v2.5.0    对应 fuzzy-reverse-flow v1.4.0
+版本：v2.5.1    对应 fuzzy-reverse-flow v1.4.0
 许可证：MIT License    Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
 本文件与 README.md 同为发版必检文档，内容必须与代码完全一致。
 ================================================================================
@@ -83,7 +83,7 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
     「上架 / 经营前必须办理清单」；红牌（硬违法路线）交「合法改造路线」
     版本并明确告知边界。唯一例外：用户明确说"本轮只要方案 / 先不落地"。
     最终产品最低完成定义（八形态）见 references/final-delivery.md；
-    合规流程报告骨架见 assets/templates/合规流程报告.md，五件套 =
+    合规流程报告骨架见 templates/合规流程报告.md，五件套 =
     结论档位 + 已触发红线（RFE-RL/PT 编码）+ 办证清单（带提前期）+
     倒排周计划（从今天到可上架）+ 免责 7 条与知识库复核时间戳。
   可视化
@@ -95,8 +95,14 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
                                         产出标注「快速模式产物」，合规红线照常召回
   终局交付自查（v2.5.0 铁律 21 / 阶段产出 D）
     每次交付必附一页「你要怎么自己验证」，骨架见
-    assets/templates/交付自查清单.md：通用 5 项 + 按形态追加，
+    templates/交付自查清单.md：通用 5 项 + 按形态追加，
     逐条 = 具体动作 + 预期结果，禁止写「请自行检查」。
+  实物优先与目标形态核对（v2.5.1 铁律 19 收紧，交付前强制执行）
+    回看用户目标原话的形态名词 → 核对产物清单存在该形态
+    「本体实物」（app=可安装包或可直接运行的入口；doc=成稿文件；
+    sheet=成品表…）→ 本体实物排产物清单第一项，PRD/合规流程报告/
+    自查清单等 .md 文档只作附属件排其后。产物清单里只有 .md 文档 =
+    未完成，禁止收口。详见 references/final-delivery.md 第 2.3 节。
   本地 MCP Server（v2.5.0：P2-3 已实施为仅本地形态）
     python scripts/mcp_server.py        stdio 传输、零依赖、只读工具、无网络监听
     工具：v2p_route / v2p_gate_list / v2p_issue_codes / v2p_disclaimer / v2p_selfcheck
@@ -181,7 +187,7 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
   8.4 每份 v2p plan 报告强制附带知识库复核时间戳与第 6 节完整免责声明。
 
 【9. 安装与 Release 部署（降低部署成本）】
-  9.1 从 GitHub Release 下载 vague-to-product-v2.5.0.zip，核对页面 SHA256。
+  9.1 从 GitHub Release 下载 vague-to-product-v2.5.1.zip，核对页面 SHA256。
   9.2 解压到 ~/.workbuddy/skills/vague-to-product/（WorkBuddy）
       或 ~/.codex/skills/vague-to-product/（Codex CLI）。
   9.3 同级放置 fuzzy-reverse-flow/（v2p plan 需要它做合规排雷；

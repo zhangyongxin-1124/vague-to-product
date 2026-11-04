@@ -523,7 +523,7 @@ def main() -> int:
     fd = ROOT / "references" / "final-delivery.md"
     check("references/final-delivery.md 存在",
           fd.is_file() and "八形态最低完成定义" in fd.read_text(encoding="utf-8"))
-    tpl = ROOT / "assets" / "templates" / "合规流程报告.md"
+    tpl = ROOT / "templates" / "合规流程报告.md"
     check("合规流程报告模板存在且五件套齐",
           tpl.is_file() and all(k in tpl.read_text(encoding="utf-8")
                                 for k in ("结论档位", "已触发红线清单", "办证", "倒排周计划", "免责声明")))
@@ -533,7 +533,7 @@ def main() -> int:
           "21. **交付必附自查清单" in skill_txt and "7.4.3 阶段产出 D" in skill_txt)
     check("SKILL.md 含快速模式 5.1",
           "5.1 快速模式" in skill_txt and "快速模式产物" in skill_txt)
-    card = ROOT / "assets" / "templates" / "交付自查清单.md"
+    card = ROOT / "templates" / "交付自查清单.md"
     check("交付自查清单模板存在且结构完整",
           card.is_file() and all(k in card.read_text(encoding="utf-8")
                                  for k in ("具体动作", "预期结果", "按形态追加", "你要怎么自己验证")))
@@ -578,6 +578,28 @@ def main() -> int:
             check("MCP stdio 冒烟测试", False, repr(e)[:200])
     else:
         check("scripts/mcp_server.py 存在", False)
+
+    print("[34] v2.5.1：实物优先与目标形态核对（铁律 19 收紧）")
+    check("SKILL.md 铁律 19 含实物优先收紧",
+          "实物优先（v2.5.1 收紧）" in skill_txt and "第一交付物" in skill_txt)
+    check("SKILL.md 含目标形态核对关卡",
+          "目标形态核对" in skill_txt and "产物清单里找不到对应本体实物" in skill_txt)
+    check("SKILL.md 7.4.1 含本体排序与未完成判定",
+          "产物清单里只有 .md 文档 = 未完成" in skill_txt)
+    check("SKILL.md 交付自检含第 5 条形态核对",
+          "5. **形态核对（v2.5.1）**" in skill_txt)
+    fd_txt = fd.read_text(encoding="utf-8") if fd.is_file() else ""
+    check("final-delivery.md 含 2.3 实物优先核对表",
+          "2.3 实物优先与目标形态核对" in fd_txt
+          and "本体实物（产物清单里必须存在、且排第一）" in fd_txt
+          and "流程未完成" in fd_txt)
+    orch = ROOT / "scripts" / "orchestrate.py"
+    if orch.is_file():
+        ot = orch.read_text(encoding="utf-8")
+        check("orchestrate.py 报告尾部含形态核对提示",
+              "形态核对" in ot and "本体实物" in ot)
+    else:
+        check("scripts/orchestrate.py 存在", False)
 
     print(f"\n结果：通过 {len(PASS)} 项，失败 {len(FAIL)} 项")
     if FAIL:
