@@ -1,6 +1,6 @@
 ================================================================================
 vague-to-product（模糊需求挖掘与产出生成器） 使用说明
-版本：v2.5.1    对应 fuzzy-reverse-flow v1.4.0
+版本：v2.6.0    对应 fuzzy-reverse-flow v1.4.0
 许可证：MIT License    Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
 本文件与 README.md 同为发版必检文档，内容必须与代码完全一致。
 ================================================================================
@@ -103,6 +103,16 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
     sheet=成品表…）→ 本体实物排产物清单第一项，PRD/合规流程报告/
     自查清单等 .md 文档只作附属件排其后。产物清单里只有 .md 文档 =
     未完成，禁止收口。详见 references/final-delivery.md 第 2.3 节。
+  目标设备匹配与呈现顺序（v2.6.0 铁律 19 第二轮收紧）
+    本体必须能在用户指定的目标设备上打开（形态映射表）：
+    用户说「手机APP」，合格本体三选一 = APK 安装包 /
+    微信小程序工程（可导入微信开发者工具→真机预览）/
+    已部署的移动端 Web App URL（手机浏览器或扫码即开）。
+    PC 本地端口网页 ≠ 手机APP；本地起端口跑通了 ≠ 交付了，
+    用户手机够不着你电脑的 localhost。
+    最终交付消息第一段必须回答「东西在哪、怎么打开」（URL /
+    二维码 / 导入预览步骤 + 真机自测指引），.md 文档列表只能排
+    后面。详见 references/final-delivery.md 第 2.4 节设备匹配表。
   本地 MCP Server（v2.5.0：P2-3 已实施为仅本地形态）
     python scripts/mcp_server.py        stdio 传输、零依赖、只读工具、无网络监听
     工具：v2p_route / v2p_gate_list / v2p_issue_codes / v2p_disclaimer / v2p_selfcheck
@@ -187,7 +197,7 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
   8.4 每份 v2p plan 报告强制附带知识库复核时间戳与第 6 节完整免责声明。
 
 【9. 安装与 Release 部署（降低部署成本）】
-  9.1 从 GitHub Release 下载 vague-to-product-v2.5.1.zip，核对页面 SHA256。
+  9.1 从 GitHub Release 下载 vague-to-product-v2.6.0.zip，核对页面 SHA256。
   9.2 解压到 ~/.workbuddy/skills/vague-to-product/（WorkBuddy）
       或 ~/.codex/skills/vague-to-product/（Codex CLI）。
   9.3 同级放置 fuzzy-reverse-flow/（v2p plan 需要它做合规排雷；

@@ -94,7 +94,7 @@ COMMON = [
     "mcp_server.py", "v2p_route", "v2p_gate_list", "v2p_issue_codes", "v2p_disclaimer", "v2p_selfcheck",
     "本地 stdio", "无网络监听",
     "docs/quick-start.md", "docs/FAQ.md", "README_EN.md", "examples/", "案例库",
-    "铁律 21", "实物优先", "目标形态核对",
+    "铁律 21", "实物优先", "目标形态核对", "设备匹配", "形态映射表", "PC 本地端口网页 ≠ 手机APP", "本地起端口跑通了 ≠ 交付了", "东西在哪、怎么打开",
 ]
 
 

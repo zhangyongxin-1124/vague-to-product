@@ -585,9 +585,9 @@ def main() -> int:
     check("SKILL.md 含目标形态核对关卡",
           "目标形态核对" in skill_txt and "产物清单里找不到对应本体实物" in skill_txt)
     check("SKILL.md 7.4.1 含本体排序与未完成判定",
-          "产物清单里只有 .md 文档 = 未完成" in skill_txt)
+          "产物清单里只有 .md 文档、或本体设备不符 = 未完成" in skill_txt)
     check("SKILL.md 交付自检含第 5 条形态核对",
-          "5. **形态核对（v2.5.1）**" in skill_txt)
+          "5. **形态与设备核对" in skill_txt)
     fd_txt = fd.read_text(encoding="utf-8") if fd.is_file() else ""
     check("final-delivery.md 含 2.3 实物优先核对表",
           "2.3 实物优先与目标形态核对" in fd_txt
@@ -600,6 +600,26 @@ def main() -> int:
               "形态核对" in ot and "本体实物" in ot)
     else:
         check("scripts/orchestrate.py 存在", False)
+
+    print("[35] v2.6.0：目标设备匹配与交付呈现顺序（铁律 19 第二轮收紧）")
+    check("SKILL.md 铁律 19 含设备匹配收紧",
+          "设备匹配（v2.6.0 收紧）" in skill_txt and "PC 本地端口网页 = 形态不符" in skill_txt)
+    check("SKILL.md 7.4.1 含形态映射表",
+          "核对目标设备（v2.6.0 强制，形态映射表）" in skill_txt
+          and "微信开发者工具" in skill_txt)
+    check("SKILL.md 含 PC本地端口≠手机APP 判定",
+          "localhost:3100" in skill_txt and "PC 本地端口网页 ≠ 手机 APP" in skill_txt)
+    check("SKILL.md 含呈现顺序关卡",
+          "排序与呈现（v2.6.0 强制）" in skill_txt
+          and "我的东西在哪、怎么打开" in skill_txt)
+    check("SKILL.md 交付自检第 5 条升级为形态与设备核对",
+          "5. **形态与设备核对（v2.6.0）**" in skill_txt)
+    check("final-delivery.md 含 2.4 目标设备匹配表",
+          "2.4 目标设备匹配" in fd_txt
+          and "本地起端口跑通了 ≠ 交付了" in fd_txt)
+    if orch.is_file():
+        check("orchestrate.py 报告尾部含设备匹配提示",
+              "设备匹配（v2.6.0 新增）" in ot and "微信小程序工程" in ot)
 
     print(f"\n结果：通过 {len(PASS)} 项，失败 {len(FAIL)} 项")
     if FAIL:

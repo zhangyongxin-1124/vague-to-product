@@ -7,7 +7,7 @@
 
 ## 零、使用前提与能力边界（必读）
 
-> 本项目是「本地文件 + Python CLI + 落盘知识库」；**内置一个本地 stdio MCP Server（`scripts/mcp_server.py`，只读工具、无网络监听）**，除此之外**没有任何 HTTP 服务或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.5.1**，配套 fuzzy-reverse-flow **v1.4.0**。
+> 本项目是「本地文件 + Python CLI + 落盘知识库」；**内置一个本地 stdio MCP Server（`scripts/mcp_server.py`，只读工具、无网络监听）**，除此之外**没有任何 HTTP 服务或云端 API**，不存在可供远程调用的地址。**MIT 解决的是「能不能拿去用」，不解决「别人怎么连上」。** 当前版本 **v2.6.0**，配套 fuzzy-reverse-flow **v1.4.0**。
 
 ### 0.1 三档能力边界（A / B / C）
 
@@ -149,6 +149,14 @@ v2.4.0 用两条铁律堵死这个口子（SKILL.md 铁律 19/20）：
 ```
 
 > 规范：[`references/final-delivery.md`](references/final-delivery.md) ｜ 报告骨架：[`templates/合规流程报告.md`](templates/合规流程报告.md)
+
+## v2.6.0 修复：目标设备匹配与交付呈现顺序（铁律 19 第二轮收紧）
+
+真实失败案例（v2.5.1 之后仍复现）：用户明确要"制作一个手机 APP"，流程建完了工程、起好了端口、API 全流程测试通过，但交付的是 **PC 本地端口网页**（localhost:3100），且最终消息里三个 .md 文档排在最前面——本体存在但**设备不符 + 呈现错位**。v2.6.0 堵死这两个口子：
+
+1. **设备匹配关卡（7.4.1 形态映射表）**：本体必须能在用户指定的目标设备上打开。用户说"手机 APP"，合格本体三选一：APK 安装包 / 微信小程序工程（可导入微信开发者工具→真机预览）/ 已部署的移动端 Web App URL（手机浏览器或扫码即开）。**PC 本地端口网页 ≠ 手机APP**——本地起端口跑通了 ≠ 交付了，用户的手机够不着你电脑的 localhost。
+2. **呈现顺序关卡**：最终交付消息第一段必须回答"东西在哪、怎么打开"（URL / 二维码 / 导入预览步骤 + 真机自测指引），.md 文档列表只能排后面。
+3. 铁律 19 追加"设备匹配"句；交付自检第 5 条升级为"形态与设备核对"；`references/final-delivery.md` 新增 2.4 目标设备匹配表；`orchestrate.py` 报告尾部新增第 7 条提示；`selftest.py` 新增 [35] 断言组。
 
 ## v2.5.1 修复：实物优先与目标形态核对（铁律 19 收紧）
 
@@ -410,7 +418,7 @@ MIT © 2026 张勇鑫 (Zhang Yongxin)
 
 ## 附录 D · GitHub Release 部署与发版校验
 
-1. 从 GitHub Release 下载 `vague-to-product-v2.5.1.zip`，核对页面给出的 **SHA256**。
+1. 从 GitHub Release 下载 `vague-to-product-v2.6.0.zip`，核对页面给出的 **SHA256**。
 2. 解压到 `~/.workbuddy/skills/<技能名>/`（WorkBuddy）或 `~/.codex/skills/<技能名>/`（Codex CLI）；fuzzy-reverse-flow-v1.4.0.zip 需同级放置（或用 `RFE_SCRIPT` 指定）。
 3. 执行 `python scripts/selftest.py`，应输出「全部通过」；再跑 `rfe init` → `rfe migrate --check`，完成 0.2 节 12 项自检。
 4. 维护者发版固定顺序：**改代码 → 更新 README.md 与 使用说明.txt → `python _check_docs.py` → 组装发布包 → `python _check_docs.py --zip dist/<包名>.zip` → 提交推送 → 上传 / 替换 Release 附件**。两轮校验全部 PASS 才允许发版。
