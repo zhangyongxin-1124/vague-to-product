@@ -95,6 +95,7 @@ COMMON = [
     "本地 stdio", "无网络监听",
     "docs/quick-start.md", "docs/FAQ.md", "README_EN.md", "examples/", "案例库",
     "铁律 21", "实物优先", "目标形态核对", "设备匹配", "形态映射表", "PC 本地端口网页 ≠ 手机APP", "本地起端口跑通了 ≠ 交付了", "东西在哪、怎么打开",
+    "gate_verify.py", "机防", "两次失败复盘", "release.py", "冷启动行动清单", "瘦身分层",
 ]
 
 

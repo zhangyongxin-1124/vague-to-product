@@ -42,13 +42,17 @@ REQUIRED = ["SKILL.md", "README.md", "README_EN.md", "使用说明.txt", "LICENS
             "PROVENANCE.md", "_check_docs.py", "references/issue-codes.md",
             "scripts/v2p.py", "scripts/qgate.py", "scripts/orchestrate.py",
             "scripts/bridge.py", "scripts/selftest.py", "scripts/mcp_server.py",
+            "scripts/gate_verify.py", "scripts/release.py",
+            "references/quick-mode.md", "references/output-templates.md",
             "docs/quick-start.md", "docs/FAQ.md", "docs/安装演示脚本-3分钟.md",
+            "docs/冷启动行动清单.md",
             "templates/交付自查清单.md", "examples/README.md",
             "examples/01-闹钟App-从一句话到PRD与终局交付.md",
             "examples/02-娱乐小程序-逆向施工图摘要.md",
             "examples/03-实体店-社区奶茶店可行性推演.md",
             "examples/04-文档类-商业计划书十页成稿.md",
-            "examples/05-表格类-小卖部进销存台账.md"]
+            "examples/05-表格类-小卖部进销存台账.md",
+            "examples/06-两次失败复盘-从一堆md到PC网页到三道关卡.md"]
 
 FIXED_DATE = (1980, 1, 1, 0, 0, 0)
 

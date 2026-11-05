@@ -621,6 +621,31 @@ def main() -> int:
         check("orchestrate.py 报告尾部含设备匹配提示",
               "设备匹配（v2.6.0 新增）" in ot and "微信小程序工程" in ot)
 
+    print("[36] v2.7.0：交付关卡机防化 + 瘦身分层 + 失败案例库 + 发版自动化")
+    gv = ROOT / "scripts" / "gate_verify.py"
+    check("scripts/gate_verify.py 存在（P0 机防）", gv.is_file())
+    if gv.is_file():
+        gvt = gv.read_text(encoding="utf-8")
+        check("gate_verify 含三道关卡", all(k in gvt for k in ("关卡1", "关卡2", "关卡3")))
+        check("gate_verify 含内置自检", "--selftest" in gvt and "正向" in gvt or "自检通过" in gvt)
+        r = subprocess.run([sys.executable, str(gv), "--selftest"], capture_output=True, text=True)
+        check("gate_verify 自检可运行（正向放行+负向拦截）",
+              r.returncode == 0 and "自检通过" in r.stdout)
+    check("SKILL.md 7.4.1 含机器核验步骤（机防）",
+          "6. **机器核验（v2.7.0 强制，机防）**" in skill_txt and "gate_verify.py" in skill_txt)
+    check("SKILL.md 已瘦身（<470 行，v2.7.0 分层）", len(skill_txt.splitlines()) < 470)
+    for sunk in ("references/quick-mode.md", "references/output-templates.md"):
+        fp = ROOT / sunk
+        check(f"下沉文件存在：{sunk}", fp.is_file())
+    ex06 = ROOT / "examples" / "06-两次失败复盘-从一堆md到PC网页到三道关卡.md"
+    check("失败复盘案例 06 存在【真实】", ex06.is_file()
+          and "真实" in ex06.read_text(encoding="utf-8")[:200])
+    rel = ROOT / "scripts" / "release.py"
+    check("scripts/release.py 存在（发版自动化）", rel.is_file()
+          and "SHA256SUMS" in rel.read_text(encoding="utf-8"))
+    check("冷启动行动清单存在", (ROOT / "docs" / "冷启动行动清单.md").is_file())
+    check("快速模式声明关卡不豁免", "关卡不豁免" in skill_txt or "三道关卡（`scripts/gate_verify.py`）也不豁免" in skill_txt)
+
     print(f"\n结果：通过 {len(PASS)} 项，失败 {len(FAIL)} 项")
     if FAIL:
         print("失败项：" + "、".join(FAIL))

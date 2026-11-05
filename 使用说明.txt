@@ -1,6 +1,6 @@
 ================================================================================
 vague-to-product（模糊需求挖掘与产出生成器） 使用说明
-版本：v2.6.0    对应 fuzzy-reverse-flow v1.4.0
+版本：v2.7.0    对应 fuzzy-reverse-flow v1.5.0
 许可证：MIT License    Copyright (c) 2026 张勇鑫 (Zhang Yongxin)
 本文件与 README.md 同为发版必检文档，内容必须与代码完全一致。
 ================================================================================
@@ -103,6 +103,24 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
     sheet=成品表…）→ 本体实物排产物清单第一项，PRD/合规流程报告/
     自查清单等 .md 文档只作附属件排其后。产物清单里只有 .md 文档 =
     未完成，禁止收口。详见 references/final-delivery.md 第 2.3 节。
+  交付关卡机防化（v2.7.0 新增：从"人防"到"机防"）
+    收口前必跑：python scripts/gate_verify.py --form <目标形态原话>
+      --delivery <交付消息文件> --products <产物目录>
+    三道关卡（形态本体/设备匹配/呈现顺序）任一 FAIL = 禁止收口。
+    内置自检：python scripts/gate_verify.py --selftest（正向放行 +
+    负向拦截"只有.md / PC localhost"两种失败模式）。
+    条文可能被读漏，脚本不会——机防是根治执行漂移的唯一彻底方案。
+  发版自动化（v2.7.0）
+    python scripts/release.py --version X.Y.Z --commit-msg "..." 
+    一键完成：预检→Git Data API 推送→Release→zip 与 SHA256SUMS 附件。
+  瘦身分层（v2.7.0）
+    SKILL.md 569→437 行；快速模式与输出模板细则下沉
+    references/quick-mode.md、output-templates.md，铁律与关卡关键句保留。
+  失败案例库（v2.7.0）
+    examples/06-两次失败复盘【真实】——两次失败怎么被三道关卡拦住，
+    失败案例比成功案例更有说服力。
+  冷启动行动清单（v2.7.0）
+    docs/冷启动行动清单.md——两周拿到 10 个真实用户反馈的可执行单。
   目标设备匹配与呈现顺序（v2.6.0 铁律 19 第二轮收紧）
     本体必须能在用户指定的目标设备上打开（形态映射表）：
     用户说「手机APP」，合格本体三选一 = APK 安装包 /
@@ -197,7 +215,7 @@ HTTP 服务或云端 API（内置的本地 stdio MCP Server 只读、无网络�
   8.4 每份 v2p plan 报告强制附带知识库复核时间戳与第 6 节完整免责声明。
 
 【9. 安装与 Release 部署（降低部署成本）】
-  9.1 从 GitHub Release 下载 vague-to-product-v2.6.0.zip，核对页面 SHA256。
+  9.1 从 GitHub Release 下载 vague-to-product-v2.7.0.zip，核对页面 SHA256。
   9.2 解压到 ~/.workbuddy/skills/vague-to-product/（WorkBuddy）
       或 ~/.codex/skills/vague-to-product/（Codex CLI）。
   9.3 同级放置 fuzzy-reverse-flow/（v2p plan 需要它做合规排雷；
